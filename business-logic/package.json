@@ -1,0 +1,23 @@
+{
+  "name": "business-logic",
+  "version": "1.0.0",
+  "description": "business logic layer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Benoit Ranque",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "corser": "^2.0.1",
+    "express": "^4.16.4",
+    "express-graphql": "^0.7.1",
+    "express-throttle-bandwidth": "^1.0.1",
+    "graphql": "^14.1.1",
+    "jsonwebtoken": "^8.5.0",
+    "pg": "^7.9.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
+  }
+}

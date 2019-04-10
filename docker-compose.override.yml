@@ -1,0 +1,24 @@
+version: '3.6'
+services:
+  nginx:
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+  postgres:
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  pgadmin:
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+  business-logic:
+    image: business-logic:dev
+    build:
+      args:
+        NODE_ENV: development
+    command: nodemon -L src/index.js
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./business-logic/src:/usr/app/src
+volumes:
+  postgres:
+  pgadmin:
