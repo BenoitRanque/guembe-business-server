@@ -11,6 +11,7 @@ const rootValue = {
       case 'facebook':
         try {
           const { access_token } = await request({
+            method: 'get',
             uri: 'https://graph.facebook.com/v3.2/oauth/access_token',
             json: true,
             qs: {
@@ -22,10 +23,13 @@ const rootValue = {
           })
 
           const response = await request({
+            method: 'get',
             uri: 'https://graph.facebook.com/me?fields=id&access_token',
+            json: true,
             qs: {
               access_token,
-              fields: 'id,name'
+              fields: 'id,name,email,first_name,last_name,middle_name'
+              // fields: 'id,name,email,first_name,last_name,middle_name,name_format,picture,short_name'
             }
           })
 
@@ -34,8 +38,6 @@ const rootValue = {
         } catch (error) {
           console.error(error)
           throw error
-        } finally {
-          console.log('finally')
         }
 /*
 GET https://graph.facebook.com/v3.2/oauth/access_token?
@@ -48,6 +50,39 @@ GET https://graph.facebook.com/v3.2/oauth/access_token?
         throw new Error(`OpenAuth Provider ${provider} not yet implemented`)
         break
       case 'google':
+        try {
+
+          const { access_token } = await request({
+            method: 'post',
+            json: true,
+            uri: 'https://www.googleapis.com/oauth2/v4/token',
+            qs: {
+              grant_type: 'authorization_code',
+              client_id: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_ID,
+              client_secret: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET,
+              redirect_uri,
+              code
+            }
+          })
+
+          const response = await request({
+            method: 'get',
+            uri: 'https://www.googleapis.com/oauth2/v1/userinfo?access_token',
+            json: true,
+            qs: {
+              access_token,
+              fields: 'id,name,email,given_name,family_name'
+              // fields: 'id,email,verified_email,name,given_name,family_name,link,picture,locale'
+            }
+          })
+
+          console.log(response)
+
+
+        } catch (error) {
+          console.error(error)
+          throw error
+        }
 
         throw new Error(`OpenAuth Provider ${provider} not yet implemented`)
         break
