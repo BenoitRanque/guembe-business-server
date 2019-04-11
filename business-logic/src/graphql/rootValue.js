@@ -87,7 +87,6 @@ GET https://graph.facebook.com/v3.2/oauth/access_token?
         throw new Error(`OpenAuth Provider ${provider} not yet implemented`)
         break
       case 'github':
-
         throw new Error(`OpenAuth Provider ${provider} not yet implemented`)
         break
       default:

@@ -1,6 +1,101 @@
 BEGIN;
 
 CREATE SCHEMA client;
+CREATE TABLE client.account;
+CREATE TABLE client.authentication_provider;
+CREATE TABLE client.authentication;
+CREATE TABLE client.;
+CREATE SCHEMA staff;
+CREATE TABLE staff.account;
+CREATE TABLE staff.role;
+CREATE TABLE staff.account_role;
+CREATE SCHEMA product;
+                listing -- a listing is a combo of 1 or more products. It has display limits, by date or stock
+                        -- todo: how does a listing react if a product is updated/replaced?
+CREATE TABLE product.listing (name, description, price);
+CREATE TABLE sale_listing_item (); -- all listings are combos.
+CREATE TABLE product.sale_range (listing, use_range, display_from, display_to, use_range, stock)
+CREATE TABLE product.use_range (listing, strategy);
+
+CREATE TABLE product.combo (name)
+CREATE TABLE product.combo_listing (listing)
+
+CREATE TABLE sale ()
+CREATE TABLE sale_item (item, amount)
+
+CREATE SCHEMA metadata;
+CREATE TABLE metadata.holidays (id, name, description, date)
+CREATE TABLE metadata.weekdays (id, name, description)
+
+CREATE SCHEMA product;
+CREATE TABLE transaction.sale;
+CREATE TABLE transaction.;
+
+sale {
+    items: {
+        listings {
+            product
+        }
+    }
+}
+sale
+sale_item
+sale_item_use
+listing (listing_item, available_from, available_to, stock)
+listing_product (product, price)
+product (name, description)
+listing_use (from, to) -- link this to product or listing? thinking listing. Should price be a part of listing?
+
+sale (client_id)
+sale_listing (listing)
+
+-- define how listing reacts to product change
+--
+
+listing (listing_id, available_from, available_to, created_at, updated_at, created_by, updated_by)
+listing_available_days (listing_id, day, PRIMARY KEY (listing_id, day))
+listing_item (listing_id, product_id, unit_count, unit_price, PRIMARY KEY (listing_id, product_id))
+product (product_id, product_name, description, created_at, updated_at, created_by, updated_by)
+
+weekdays (id, name, description)
+
+CREATE TABLE sales.product (
+    product_id
+    name
+    description
+    price INT
+    created_at
+    updated_at
+    created_by
+    updated_by
+);
+CREATE TABLE product_activation {
+    activation_id
+    product_id
+-- link to validity table
+-- limited stock
+-- validate during specific time period
+-- sale_validity
+-- use_valid period
+-- validation period
+-- validation strategies: product valid on specific weekdays (plus days 8 = holidays)
+-- validation strategies: product valid during specific date range
+-- validation strategies: product valid specific time (from purchase date)
+
+    created_at
+    updated_at
+    created_by
+    updated_by
+}
+product
+    item
+    activation
+    activation days -- 7 days of the week plus holidays
+
+holiday table
+
+
+CREATE TABLE sales.product_version;
 
 CREATE TABLE client.account(
     account_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -33,8 +128,9 @@ CREATE TABLE client.billing (
 	razon social
 
 );
-
-
+payment table
+payment
+sale
 INSERT INTO client.auth_provider
     (name)
 VALUES
