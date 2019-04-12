@@ -52,7 +52,8 @@ CREATE TABLE shop.listing_article (
 
 CREATE TABLE shop.lifetime {
     lifetime_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    lifetime_name TEXT NOT NULL,
+    private_name TEXT NOT NULL,
+    public_name TEXT NOT NULL,
     description TEXT,
     "start" DATE NOT NULL,
     "end" DATE NOT NULL
@@ -73,14 +74,14 @@ CREATE TABLE calendar.day (
 );
 
 INSERT INTO calendar.day (day_id, day_name) VALUES
-    (0, 'Feriados'),
-    (1, 'Lunes'),
-    (2, 'Martes'),
-    (3, 'Miercoles'),
-    (4, 'Jueves'),
-    (5, 'Viernes'),
-    (6, 'Sabado'),
-    (7, 'Domingo');
+    (0, 'Lunes'),
+    (1, 'Martes'),
+    (2, 'Miercoles'),
+    (3, 'Jueves'),
+    (4, 'Viernes'),
+    (5, 'Sabado'),
+    (6, 'Domingo');
+    (7, 'Feriados'),
 
 CREATE TABLE calendar.holiday (
     holiday_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
