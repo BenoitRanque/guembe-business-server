@@ -6,52 +6,87 @@ CREATE TABLE client.authentication_provider;
 CREATE TABLE client.authentication;
 CREATE TABLE client.;
 CREATE SCHEMA staff;
-CREATE TABLE staff.account;
-CREATE TABLE staff.role;
-CREATE TABLE staff.account_role;
+CREATE TABLE staff.account (
+    account_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+);
+CREATE TABLE staff.role (
+    role_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    role_name TEXT NOT NULL UNIQUE,
+    description TEXT
+);
+CREATE TABLE staff.account_role (
+    account_id UUID REFERENCES staff.account(account_id),
+    role_id UUID REFERENCES staff.account(role_id)
+);
 
-CREATE TABLE product (
-    product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    product_name TEXT,
+CREATE SCHEMA shop;
+CREATE TABLE shop.article (
+    article_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    article_name TEXT,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by UUID NOT NULL REFERENCES staff.account (account_id),
     updated_by UUID NOT NULL REFERENCES staff.account (account_id)
 );
-CREATE TABLE listing (
+CREATE TABLE shop.listing (
     listing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     listing_name TEXT,
     description TEXT,
-    available_from,
-    available_to,
+    available_from DATE WITH TIME ZONE, -- when this will be available in store
+    available_to DATE WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by UUID NOT NULL REFERENCES staff.account (account_id),
     updated_by UUID NOT NULL REFERENCES staff.account (account_id)
 );
-CREATE TABLE listing_available_days (
-    listing_id UUID,
-    day_id UUID REFERENCES calendar.day (day_id),
-    PRIMARY KEY (listing_id, day_id)
+CREATE TABLE shop.listing_article (
+    listing_id UUID NOT NULL REFERENCES shop.listing (listing_id),
+    article_id UUID NOT NULL REFERENCES shop.article (article_id),
+    unit_count INT CHECK (unit_count > 0),
+    unit_price INT CHECK (unit_price >= 0),
+    lifetime_id UUID NOT NULL REFERENCES shop.lifetime (lifetime_id)
+    PRIMARY KEY (listing_id, article_id)
 );
-CREATE TABLE listing_product (listing_id, product_id, unit_count, unit_price, PRIMARY KEY (listing_id, product_id))
 
+CREATE TABLE shop.lifetime {
+    lifetime_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lifetime_name TEXT NOT NULL,
+    description TEXT,
+    "start" DATE NOT NULL,
+    "end" DATE NOT NULL
+}
 
-
+CREATE TABLE shop.lifetime_day {
+    lifetime_id UUID NOT NULL REFERENCES shop.lifetime (lifetime_id),
+    day_id TEXT NOT NULL REFERENCES calendar.day (day_id)
+        ON UPDATE CASCADE,
+    PRIMARY (lifetime_id, day_id)
+}
 
 CREATE SCHEMA calendar;
+
 CREATE TABLE calendar.day (
-    day_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    day_name TEXT NOT NULL,
-    description TEXT
+    day_id INT PRIMARY KEY,
+    day_name TEXT NOT NULL
 );
+
+INSERT INTO calendar.day (day_id, day_name) VALUES
+    (0, 'Feriados'),
+    (1, 'Lunes'),
+    (2, 'Martes'),
+    (3, 'Miercoles'),
+    (4, 'Jueves'),
+    (5, 'Viernes'),
+    (6, 'Sabado'),
+    (7, 'Domingo');
+
 CREATE TABLE calendar.holiday (
     holiday_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     holiday_name TEXT NOT NULL,
-    description ,
-    date
+    description TEXT,
+    holiday_date DATE NOY NULL
 );
 
 
