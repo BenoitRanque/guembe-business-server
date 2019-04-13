@@ -1,9 +1,23 @@
 CREATE TABLE BEGIN;
 
 CREATE SCHEMA client;
-CREATE TABLE client.account;
-CREATE TABLE client.authentication_provider;
-CREATE TABLE client.authentication;
+CREATE TABLE client.account (
+
+);
+CREATE TABLE client.authentication_provider (
+
+);
+CREATE TABLE client.authentication (
+
+);
+
+CREATE TABLE client.usable_product (
+    account_id
+    product_id
+    sale_id
+);
+CREATE TABLE client.used_product;
+
 CREATE TABLE client.;
 CREATE SCHEMA staff;
 CREATE TABLE staff.account (
@@ -21,9 +35,9 @@ CREATE TABLE staff.account_role (
 );
 
 CREATE SCHEMA shop;
-CREATE TABLE shop.article (
-    article_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    article_name TEXT,
+CREATE TABLE shop.product (
+    product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_name TEXT,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -41,13 +55,13 @@ CREATE TABLE shop.listing (
     created_by UUID NOT NULL REFERENCES staff.account (account_id),
     updated_by UUID NOT NULL REFERENCES staff.account (account_id)
 );
-CREATE TABLE shop.listing_article (
+CREATE TABLE shop.listing_product (
     listing_id UUID NOT NULL REFERENCES shop.listing (listing_id),
-    article_id UUID NOT NULL REFERENCES shop.article (article_id),
+    product_id UUID NOT NULL REFERENCES shop.product (product_id),
     unit_count INT CHECK (unit_count > 0),
     unit_price INT CHECK (unit_price >= 0),
     lifetime_id UUID NOT NULL REFERENCES shop.lifetime (lifetime_id)
-    PRIMARY KEY (listing_id, article_id)
+    PRIMARY KEY (listing_id, product_id)
 );
 
 CREATE TABLE shop.lifetime {
@@ -66,6 +80,8 @@ CREATE TABLE shop.lifetime_day {
     PRIMARY (lifetime_id, day_id)
 }
 
+CREATE TABLE shop.sale ();
+CREATE TABLE shop.payment (); -- create usable product when payment is made
 CREATE SCHEMA calendar;
 
 CREATE TABLE calendar.day (
