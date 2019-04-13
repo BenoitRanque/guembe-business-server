@@ -1,0 +1,324 @@
+- args:
+    name: clients
+    table:
+      name: authentication_provider
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: authentication_provider_name
+        table:
+          name: client
+          schema: store
+  type: create_array_relationship
+- args:
+    name: authentication_provider
+    table:
+      name: client
+      schema: store
+    using:
+      foreign_key_constraint_on: authentication_provider_name
+  type: create_object_relationship
+- args:
+    name: purchases
+    table:
+      name: client
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: client_id
+        table:
+          name: purchase
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchase
+    table:
+      name: invoice
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: account
+    table:
+      name: listing
+      schema: store
+    using:
+      foreign_key_constraint_on: created_by
+  type: create_object_relationship
+- args:
+    name: accountByUpdatedBy
+    table:
+      name: listing
+      schema: store
+    using:
+      foreign_key_constraint_on: updated_by
+  type: create_object_relationship
+- args:
+    name: listing_products
+    table:
+      name: listing
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: listing_id
+        table:
+          name: listing_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchase_listings
+    table:
+      name: listing
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: listing_id
+        table:
+          name: purchase_listing
+          schema: store
+  type: create_array_relationship
+- args:
+    name: lifetime
+    table:
+      name: listing_product
+      schema: store
+    using:
+      foreign_key_constraint_on: lifetime_id
+  type: create_object_relationship
+- args:
+    name: listing
+    table:
+      name: listing_product
+      schema: store
+    using:
+      foreign_key_constraint_on: listing_id
+  type: create_object_relationship
+- args:
+    name: product
+    table:
+      name: listing_product
+      schema: store
+    using:
+      foreign_key_constraint_on: product_id
+  type: create_object_relationship
+- args:
+    name: purchase
+    table:
+      name: payment
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: purchase
+    table:
+      name: payment_cancellation
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: purchase
+    table:
+      name: payment_confirmation
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: account
+    table:
+      name: product
+      schema: store
+    using:
+      foreign_key_constraint_on: created_by
+  type: create_object_relationship
+- args:
+    name: accountByUpdatedBy
+    table:
+      name: product
+      schema: store
+    using:
+      foreign_key_constraint_on: updated_by
+  type: create_object_relationship
+- args:
+    name: listing_products
+    table:
+      name: product
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: product_id
+        table:
+          name: listing_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchased_products
+    table:
+      name: product
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: product_id
+        table:
+          name: purchased_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: client
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on: client_id
+  type: create_object_relationship
+- args:
+    name: invoices
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: invoice
+          schema: store
+  type: create_array_relationship
+- args:
+    name: payments
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: payment
+          schema: store
+  type: create_array_relationship
+- args:
+    name: payment_cancellations
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: payment_cancellation
+          schema: store
+  type: create_array_relationship
+- args:
+    name: payment_confirmations
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: payment_confirmation
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchase_listings
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: purchase_listing
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchased_products
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: purchased_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: listing
+    table:
+      name: purchase_listing
+      schema: store
+    using:
+      foreign_key_constraint_on: listing_id
+  type: create_object_relationship
+- args:
+    name: purchase
+    table:
+      name: purchase_listing
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: lifetime
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      foreign_key_constraint_on: lifetime_id
+  type: create_object_relationship
+- args:
+    name: product
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      foreign_key_constraint_on: product_id
+  type: create_object_relationship
+- args:
+    name: purchase
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship
+- args:
+    name: used_products
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchassed_product_id
+        table:
+          name: used_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: account
+    table:
+      name: used_product
+      schema: store
+    using:
+      foreign_key_constraint_on: created_by
+  type: create_object_relationship
+- args:
+    name: purchased_product
+    table:
+      name: used_product
+      schema: store
+    using:
+      foreign_key_constraint_on: purchassed_product_id
+  type: create_object_relationship
+- args:
+    name: accountByUpdatedBy
+    table:
+      name: used_product
+      schema: store
+    using:
+      foreign_key_constraint_on: updated_by
+  type: create_object_relationship

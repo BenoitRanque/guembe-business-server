@@ -1,0 +1,16 @@
+- args:
+    name: holiday
+    schema: calendar
+  type: add_existing_table_or_view
+- args:
+    name: lifetime
+    schema: calendar
+  type: add_existing_table_or_view
+- args:
+    name: lifetime_weekday
+    schema: calendar
+  type: add_existing_table_or_view
+- args:
+    name: weekday
+    schema: calendar
+  type: add_existing_table_or_view

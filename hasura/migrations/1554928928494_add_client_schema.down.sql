@@ -1,5 +1,0 @@
-BEGIN;
-
-DROP SCHEMA client CASCADE;
-
-COMMIT;

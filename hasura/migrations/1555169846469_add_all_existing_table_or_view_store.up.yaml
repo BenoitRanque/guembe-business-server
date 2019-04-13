@@ -1,0 +1,52 @@
+- args:
+    name: authentication_provider
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: client
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: invoice
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: listing
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: listing_product
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: payment
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: payment_cancellation
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: payment_confirmation
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: product
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: purchase
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: purchase_listing
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: purchased_product
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: used_product
+    schema: store
+  type: add_existing_table_or_view

@@ -1,0 +1,204 @@
+- args:
+    relationship: clients
+    table:
+      name: authentication_provider
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: authentication_provider
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchases
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: invoice
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: account
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: accountByUpdatedBy
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing_products
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase_listings
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: lifetime
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: product
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: payment_cancellation
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: payment_confirmation
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: account
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: accountByUpdatedBy
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing_products
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_products
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: invoices
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payments
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payment_cancellations
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payment_confirmations
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase_listings
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_products
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: purchase_listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: purchase_listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: lifetime
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: product
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchase
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: used_products
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: account
+    table:
+      name: used_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_product
+    table:
+      name: used_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: accountByUpdatedBy
+    table:
+      name: used_product
+      schema: store
+  type: drop_relationship

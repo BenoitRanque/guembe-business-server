@@ -1,0 +1,24 @@
+- args:
+    relationship: lifetime_weekdays
+    table:
+      name: lifetime
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: lifetime
+    table:
+      name: lifetime_weekday
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: weekday
+    table:
+      name: lifetime_weekday
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: lifetime_weekdays
+    table:
+      name: weekday
+      schema: calendar
+  type: drop_relationship
