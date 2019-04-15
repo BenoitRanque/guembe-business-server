@@ -1,9 +1,9 @@
 - args:
-    name: account
+    name: user
     schema: staff
   type: add_existing_table_or_view
 - args:
-    name: account_role
+    name: user_role
     schema: staff
   type: add_existing_table_or_view
 - args:

@@ -1,0 +1,24 @@
+- args:
+    relationship: user_roles
+    table:
+      name: user
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: user
+    table:
+      name: user_role
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: role
+    table:
+      name: user_role
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: user_roles
+    table:
+      name: role
+      schema: staff
+  type: drop_relationship

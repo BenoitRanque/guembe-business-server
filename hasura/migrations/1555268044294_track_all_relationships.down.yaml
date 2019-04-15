@@ -1,203 +1,222 @@
 - args:
-    relationship: clients
+    relationship: purchases
     table:
-      name: authentication_provider
+      name: client
       schema: store
   type: drop_relationship
+
 - args:
     relationship: authentication_provider
     table:
       name: client
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: purchases
+    relationship: clients
     table:
-      name: client
+      name: authentication_provider
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: purchase
-    table:
-      name: invoice
-      schema: store
-  type: drop_relationship
-- args:
-    relationship: account
+    relationship: created_by_user
     table:
       name: listing
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: accountByUpdatedBy
+    relationship: updated_by_user
     table:
       name: listing
       schema: store
   type: drop_relationship
+
 - args:
     relationship: listing_products
     table:
       name: listing
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchase_listings
     table:
       name: listing
       schema: store
   type: drop_relationship
+
 - args:
     relationship: lifetime
     table:
       name: listing_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: listing
     table:
       name: listing_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: product
     table:
       name: listing_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchase
     table:
       name: payment
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: purchase
+    relationship: payment_cancellation
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: payment_confirmation
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: payment
     table:
       name: payment_cancellation
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: purchase
+    relationship: payment
     table:
       name: payment_confirmation
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: account
+    relationship: create_by_user
     table:
       name: product
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: accountByUpdatedBy
+    relationship: updated_by_user
     table:
       name: product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: listing_products
     table:
       name: product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchased_products
     table:
       name: product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: client
     table:
       name: purchase
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: invoices
+    relationship: invoice
     table:
       name: purchase
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: payments
+    relationship: payment
     table:
       name: purchase
       schema: store
   type: drop_relationship
-- args:
-    relationship: payment_cancellations
-    table:
-      name: purchase
-      schema: store
-  type: drop_relationship
-- args:
-    relationship: payment_confirmations
-    table:
-      name: purchase
-      schema: store
-  type: drop_relationship
-- args:
-    relationship: purchase_listings
-    table:
-      name: purchase
-      schema: store
-  type: drop_relationship
+
 - args:
     relationship: purchased_products
     table:
       name: purchase
       schema: store
   type: drop_relationship
+
 - args:
     relationship: listing
     table:
       name: purchase_listing
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchase
     table:
       name: purchase_listing
       schema: store
   type: drop_relationship
+
 - args:
     relationship: lifetime
     table:
       name: purchased_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: product
     table:
       name: purchased_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchase
     table:
       name: purchased_product
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: used_products
+    relationship: used_product
     table:
       name: purchased_product
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: account
+    relationship: create_by_user
     table:
       name: used_product
       schema: store
   type: drop_relationship
+
 - args:
     relationship: purchased_product
     table:
       name: used_product
       schema: store
   type: drop_relationship
+
 - args:
-    relationship: accountByUpdatedBy
+    relationship: updated_by_user
     table:
       name: used_product
       schema: store

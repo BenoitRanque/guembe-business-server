@@ -33,4 +33,4 @@ RUN chown -R node:node ./src/*
 USER node
 
 EXPOSE 4000
-CMD [ "node", "./src/index.js" ]
+CMD [ "node", "src/index.js" ]

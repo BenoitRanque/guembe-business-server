@@ -1,11 +1,11 @@
 - args:
     table:
-      name: account
+      name: user
       schema: staff
   type: untrack_table
 - args:
     table:
-      name: account_role
+      name: user_role
       schema: staff
   type: untrack_table
 - args:

@@ -3,7 +3,6 @@ const { sessionMiddleware } = require('./utils/session')
 const db = require('./utils/db')
 
 express.request.db = db
-
 const app = express()
 const port = 3000
 

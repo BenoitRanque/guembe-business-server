@@ -14,11 +14,16 @@ services:
     build:
       args:
         NODE_ENV: development
-    command: nodemon -L ./src/index.js
+    command: nodemon -L src/index.js
     environment:
       NODE_ENV: development
     volumes:
-      - ./business-logic/src:/usr/app/src
+      - ./business-logic/src:/usr/app/src:ro
+    # volumes:
+    #   - type: bind
+    #     source: ./business-logic/src/
+    #     target: /usr/app/src/
+    #     consistency: cached
 volumes:
   postgres:
   pgadmin:
