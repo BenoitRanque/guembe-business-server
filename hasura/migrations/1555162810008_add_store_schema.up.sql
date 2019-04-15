@@ -14,17 +14,20 @@ VALUES
 
 CREATE TABLE store.client (
     client_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT,
     first_name TEXT,
     middle_name TEXT,
     last_name TEXT,
     email TEXT,
-    phone TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    -- phone TEXT,
     authentication_provider_name TEXT NOT NULL REFERENCES store.authentication_provider (provider_name),
     authentication_account_id TEXT NOT NULL,
-    UNIQUE (authentication_provider_name, authentication_account_id)
+    UNIQUE (authentication_provider_name, authentication_account_id),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_client_set_updated_at BEFORE UPDATE ON store.client
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.product (
     product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -35,17 +38,23 @@ CREATE TABLE store.product (
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
 );
+CREATE TRIGGER store_product_set_updated_at BEFORE UPDATE ON store.product
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 CREATE TABLE store.listing (
     listing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     listing_name TEXT,
     description TEXT,
     available_from DATE, -- when this will be available in store
     available_to DATE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
-    updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
+    updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_listing_set_updated_at BEFORE UPDATE ON store.listing
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 CREATE TABLE store.listing_product (
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
     product_id UUID NOT NULL REFERENCES store.product (product_id),
@@ -62,6 +71,8 @@ CREATE TABLE store.purchase (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_purchase_set_updated_at BEFORE UPDATE ON store.purchase
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.purchase_listing (
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
@@ -77,6 +88,8 @@ CREATE TABLE store.payment (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_payment_set_updated_at BEFORE UPDATE ON store.payment
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- this is created in response to khipu cancellation of payment
 -- payment can only be cancelled if it has not yet been confirmed
@@ -88,6 +101,8 @@ CREATE TABLE store.payment_cancellation (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_payment_cancellation_set_updated_at BEFORE UPDATE ON store.payment_cancellation
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- this is created in response to khipu confirmation of payment
 CREATE TABLE store.payment_confirmation (
@@ -98,7 +113,8 @@ CREATE TABLE store.payment_confirmation (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
-
+CREATE TRIGGER store_payment_confirmation_set_updated_at BEFORE UPDATE ON store.payment_confirmation
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- create when payment is confirmed
 CREATE TABLE store.invoice (
     invoice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -108,6 +124,8 @@ CREATE TABLE store.invoice (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_invoice_set_updated_at BEFORE UPDATE ON store.invoice
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- create when payment is confirmed
 CREATE TABLE store.purchased_product (
@@ -118,6 +136,8 @@ CREATE TABLE store.purchased_product (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
+CREATE TRIGGER store_puchased_product_set_updated_at BEFORE UPDATE ON store.purchased_product
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.used_product (
     used_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -129,5 +149,7 @@ CREATE TABLE store.used_product (
     -- this might not be sufficient. Need checking with hasura permissions
     cancelled BOOLEAN NOT NULL DEFAULT FALSE
 );
+CREATE TRIGGER store_used_product_set_updated_at BEFORE UPDATE ON store.used_product
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 COMMIT;

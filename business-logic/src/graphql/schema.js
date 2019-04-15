@@ -10,7 +10,7 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type UserAccount {
-    account_id: UUID!
+    user_id: UUID!
     username: String!
     roles: [String!]!
   }
@@ -21,7 +21,7 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type ClientAccount {
-    account_id: UUID!
+    client_id: UUID!
     name: String
     email: String
   }
