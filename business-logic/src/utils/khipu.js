@@ -68,7 +68,7 @@ class Khipu {
   }
   async postPayments ({
     subject, // (requerido): Motivo
-    currency, // (requerido): El código de moneda en formato ISO-4217
+    currency = 'BOB', // (requerido): El código de moneda en formato ISO-4217
     amount, // (requerido): El monto del cobro. Sin separador de miles y usando '.' como separador de decimales. Hasta 4 lugares decimales, dependiendo de la moneda
     transaction_id, // (opcional): Identificador propio de la transacción. Ej: número de factura u orden de compra
     custom, // (opcional): Parámetro para enviar información personalizada de la transacción. Ej: documento XML con el detalle del carro de compra
