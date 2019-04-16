@@ -14,7 +14,7 @@ services:
     build:
       args:
         NODE_ENV: development
-    command: nodemon -L src/index.js
+    command: nodemon -L
     environment:
       NODE_ENV: development
     volumes:
