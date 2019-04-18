@@ -12,7 +12,3 @@ app.use('/graphql', require('./graphql'))
 app.listen({ port }, () => {
   console.log(`Listening on port ${port}`);
 })
-
-const khipu = require('./utils/khipu')
-
-khipu.getBanks()

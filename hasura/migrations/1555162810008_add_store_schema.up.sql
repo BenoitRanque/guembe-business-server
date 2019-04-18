@@ -47,6 +47,7 @@ CREATE TABLE store.listing (
     description TEXT,
     available_from DATE, -- when this will be available in store
     available_to DATE,
+    available_stock INTEGER CHECK (available_stock >= 0),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

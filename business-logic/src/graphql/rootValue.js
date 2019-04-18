@@ -1,8 +1,37 @@
 const request = require('request-promise')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const khipu = require('../utils/khipu')
 
 const rootValue = {
+  async test (args, ctx) {
+    try {
+      // validate sale input (here we could use custom logic)
+
+      // const result = await khipu.postPayments({
+
+      //   amount: '100',
+      //   // amount: Number(100).toFixed(2),
+      //   subject: 'TestPayment1'
+      // })
+      //     { payment_id: '3gpzl6hfvbff',
+      // payment_url: 'https://khipu.com/payment/info/3gpzl6hfvbff',
+      // app_url: 'khipu:///pos/3gpzl6hfvbff',
+      // ready_for_terminal: false,
+      // pay_me_url: 'https://khipu.com/payment/paymeStart/3gpzl6hfvbff' }
+
+      // const result = await khipu.getBanks()
+
+      const result = await khipu.getPaymentsId('3gpzl6hfvbff')
+
+      console.log(result)
+
+      return JSON.stringify(result)
+    } catch (error) {
+      // console.error(error)
+      return JSON.stringify(error)
+    }
+  },
   async client_authentication ({ provider, redirect_uri, code }, { db }) {
     console.log('validating oAuth')
     console.log(provider)

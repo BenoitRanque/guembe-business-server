@@ -36,7 +36,7 @@ services:
     volumes:
       - ./pgadmin:/var/lib/pgadmin
   graphql-engine:
-    image: hasura/graphql-engine:v1.0.0-alpha42
+    image: hasura/graphql-engine:v1.0.0-alpha44
     ports:
       - "4000:8080"
     depends_on:
@@ -61,6 +61,7 @@ services:
       context: ./business-logic
       args:
         NODE_ENV: production
+    command: node src/index.js
     ports:
       - "3000:3000"
     restart: always

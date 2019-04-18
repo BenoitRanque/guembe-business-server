@@ -7,16 +7,17 @@ class Khipu {
     this.secret = secret
   }
 
-  getAuthorizationHeader (method, url, parameters) {
+  getAuthorizationHeader (method, uri, parameters) {
     let query = [
       method.toUpperCase(),
-      encodeURIComponent(url)
+      encodeURIComponent(uri)
     ]
-    for (const key in parameters) {
-      if (parameters.hasOwnProperty(key)) {
+    // parameters must be sorted alphabetically for hash calculation
+    Object.keys(parameters).sort().forEach(key => {
+      if (parameters[key]) {
         query.push(`${encodeURIComponent(key)}=${encodeURIComponent(parameters[key])}`)
       }
-    }
+    })
 
     const hash = crypto
       .createHmac('sha256', this.secret)
@@ -26,24 +27,23 @@ class Khipu {
     return `${this.receiverId}:${hash}`
   }
 
-  getHeaders (method, url, parameters) {
+  getHeaders (method, uri, parameters) {
     return {
       'content-type': 'application/x-www-form-urlencoded',
-      authorization: this.getAuthorizationHeader(method, url, parameters)
+      authorization: this.getAuthorizationHeader(method, uri, parameters)
     }
   }
 
   async getBanks () {
     const method = 'get'
-    const url = `https://khipu.com/api/2.0/banks`
+    const uri = `https://khipu.com/api/2.0/banks`
     const parameters = {}
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters)
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters)
     })
-
-    console.log(response)
 
     return response
   }
@@ -51,18 +51,17 @@ class Khipu {
     notification_token // (requerido): Token de notifiación recibido usando la API de notificaiones 1.3 o superior.
   }) {
     const method = 'get'
-    const url = `https://khipu.com/api/2.0/payments`
+    const uri = `https://khipu.com/api/2.0/payments`
     const parameters = {
       notification_token
     }
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
@@ -92,7 +91,7 @@ class Khipu {
     confirm_timeout_date // (opcional): Fecha de rendición del cobro. Es también la fecha final para poder reembolsar el cobro. Formato ISO-8601. Ej: 2017-03-01T13:00:00Z
   }) {
     const method = 'post'
-    const url = `https://khipu.com/api/2.0/payments`
+    const uri = `https://khipu.com/api/2.0/payments`
     const parameters = {
       subject,
       currency,
@@ -120,72 +119,67 @@ class Khipu {
     }
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
   async getPaymentsId (id) {
     const method = 'get'
-    const url = `https://khipu.com/api/2.0/payments/${id}`
+    const uri = `https://khipu.com/api/2.0/payments/${id}`
     const parameters = {}
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
   async deletePaymentsId (id) {
     const method = 'delete'
-    const url = `https://khipu.com/api/2.0/payments/${id}`
+    const uri = `https://khipu.com/api/2.0/payments/${id}`
     const parameters = {}
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
   async postPaymentsIdConfirm (id) {
     const method = 'post'
-    const url = `https://khipu.com/api/2.0/payments/${id}/confirm`
+    const uri = `https://khipu.com/api/2.0/payments/${id}/confirm`
     const parameters = {}
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
   async postPaymentsIdRefunds (id, amount) {
     const method = 'post'
-    const url = `https://khipu.com/api/2.0/payments/${id}/refunds`
+    const uri = `https://khipu.com/api/2.0/payments/${id}/refunds`
     const parameters = { amount }
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
@@ -213,7 +207,7 @@ class Khipu {
     rendition_url // (opcional): URL para el webservice donde se notificará la rendición.
   }) {
     const method = 'post'
-    const url = `https://khipu.com/api/2.0/receivers`
+    const uri = `https://khipu.com/api/2.0/receivers`
     const parameters = {
       admin_first_name,
       admin_last_name,
@@ -238,12 +232,11 @@ class Khipu {
     }
     const response = await request({
       method,
-      url,
-      headers: this.getHeaders(method, url, parameters),
+      uri,
+      json: true,
+      headers: this.getHeaders(method, uri, parameters),
       qs: parameters
     })
-
-    console.log(response)
 
     return response
   }
