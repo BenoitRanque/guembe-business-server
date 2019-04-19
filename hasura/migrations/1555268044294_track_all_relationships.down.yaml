@@ -76,14 +76,7 @@
   type: drop_relationship
 
 - args:
-    relationship: payment_cancellation
-    table:
-      name: payment
-      schema: store
-  type: drop_relationship
-
-- args:
-    relationship: payment_confirmation
+    relationship: payment_completion
     table:
       name: payment
       schema: store
@@ -92,19 +85,12 @@
 - args:
     relationship: payment
     table:
-      name: payment_cancellation
+      name: payment_completion
       schema: store
   type: drop_relationship
 
 - args:
-    relationship: payment
-    table:
-      name: payment_confirmation
-      schema: store
-  type: drop_relationship
-
-- args:
-    relationship: create_by_user
+    relationship: created_by_user
     table:
       name: product
       schema: store
@@ -195,29 +181,36 @@
   type: drop_relationship
 
 - args:
-    relationship: used_product
+    relationship: usage
     table:
       name: purchased_product
       schema: store
   type: drop_relationship
 
 - args:
-    relationship: create_by_user
+    relationship: created_by_user
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
   type: drop_relationship
 
 - args:
     relationship: purchased_product
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
   type: drop_relationship
 
 - args:
     relationship: updated_by_user
     table:
-      name: used_product
+      name: purchased_product_usage
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase_listings
+    table:
+      name: purchase
       schema: store
   type: drop_relationship

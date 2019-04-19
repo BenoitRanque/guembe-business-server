@@ -114,7 +114,7 @@
   type: create_object_relationship
 
 - args:
-    name: payment_cancellation
+    name: payment_completion
     table:
       name: payment
       schema: store
@@ -123,44 +123,21 @@
         column_mapping:
           payment_id: payment_id
         remote_table:
-          name: payment_cancellation
-          schema: store
-  type: create_object_relationship
-
-- args:
-    name: payment_confirmation
-    table:
-      name: payment
-      schema: store
-    using:
-      manual_configuration:
-        column_mapping:
-          payment_id: payment_id
-        remote_table:
-          name: payment_confirmation
+          name: payment_completion
           schema: store
   type: create_object_relationship
 
 - args:
     name: payment
     table:
-      name: payment_cancellation
+      name: payment_completion
       schema: store
     using:
       foreign_key_constraint_on: payment_id
   type: create_object_relationship
 
 - args:
-    name: payment
-    table:
-      name: payment_confirmation
-      schema: store
-    using:
-      foreign_key_constraint_on: payment_id
-  type: create_object_relationship
-
-- args:
-    name: create_by_user
+    name: created_by_user
     table:
       name: product
       schema: store
@@ -299,7 +276,7 @@
   type: create_object_relationship
 
 - args:
-    name: used_product
+    name: usage
     table:
       name: purchased_product
       schema: store
@@ -308,14 +285,14 @@
         column_mapping:
           purchased_product_id: purchased_product_id
         remote_table:
-          name: used_product
+          name: purchased_product_usage
           schema: store
   type: create_object_relationship
 
 - args:
-    name: create_by_user
+    name: created_by_user
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
     using:
       foreign_key_constraint_on: created_by_user_id
@@ -324,7 +301,7 @@
 - args:
     name: purchased_product
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
     using:
       foreign_key_constraint_on: purchased_product_id
@@ -333,9 +310,21 @@
 - args:
     name: updated_by_user
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
     using:
       foreign_key_constraint_on: updated_by_user_id
   type: create_object_relationship
 
+- args:
+    name: purchase_listings
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: purchase_listing
+          schema: store
+  type: create_array_relationship

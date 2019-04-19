@@ -30,12 +30,7 @@
   type: untrack_table
 - args:
     table:
-      name: payment_cancellation
-      schema: store
-  type: untrack_table
-- args:
-    table:
-      name: payment_confirmation
+      name: payment_completion
       schema: store
   type: untrack_table
 - args:
@@ -60,6 +55,6 @@
   type: untrack_table
 - args:
     table:
-      name: used_product
+      name: purchased_product_usage
       schema: store
   type: untrack_table

@@ -23,11 +23,7 @@
     schema: store
   type: add_existing_table_or_view
 - args:
-    name: payment_cancellation
-    schema: store
-  type: add_existing_table_or_view
-- args:
-    name: payment_confirmation
+    name: payment_completion
     schema: store
   type: add_existing_table_or_view
 - args:
@@ -47,6 +43,6 @@
     schema: store
   type: add_existing_table_or_view
 - args:
-    name: used_product
+    name: purchased_product_usage
     schema: store
   type: add_existing_table_or_view

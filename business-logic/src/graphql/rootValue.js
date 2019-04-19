@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const khipu = require('../utils/khipu')
 
+// note to self
+// add mutations to manually check if payment is completed, and run the update if it is
+
+
 const rootValue = {
   async test (args, ctx) {
     try {
