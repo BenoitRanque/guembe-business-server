@@ -59,8 +59,8 @@ CREATE TRIGGER store_listing_set_updated_at BEFORE UPDATE ON store.listing
 CREATE TABLE store.listing_product (
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
     product_id UUID NOT NULL REFERENCES store.product (product_id),
-    product_count INT NOT NULL CHECK (product_count > 0),
-    product_price INT NOT NULL CHECK (product_price >= 0),
+    quantity INT NOT NULL CHECK (quantity > 0),
+    price INT NOT NULL CHECK (price >= 0),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     PRIMARY KEY (listing_id, product_id)
 );
@@ -80,7 +80,7 @@ CREATE TRIGGER store_purchase_set_updated_at BEFORE UPDATE ON store.purchase
 CREATE TABLE store.purchase_listing (
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
-    listing_count INT NOT NULL CHECK (listing_count > 0),
+    quantity INT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     PRIMARY KEY (purchase_id, listing_id)
@@ -199,75 +199,39 @@ CREATE FUNCTION store.create_purchased_products()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.cancelled = FALSE THEN
-
-        -- INSERT INTO store.purchased_product (purchase_id, product_id, lifetime_id)
-        -- SELECT
-        --     store.payment.purchase_id,
-        --     store.listing_product.product_id,
-        --     store.listing_product.lifetime_id,
-        --     store.purchase_listing.listing_count,
-        --     store.listing_product.product_count
-        -- FROM store.payment
-        -- LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
-        -- LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
-        -- WHERE store.payment.payment_id = NEW.payment_id
-
-        WITH listings AS (
-            SELECT
-                store.payment.purchase_id,
-                store.listing_product.product_id,
-                store.listing_product.lifetime_id,
-                store.purchase_listing.listing_count,
-                store.listing_product.product_count,
-                2
-            FROM store.payment
-            LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
-            LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
-            WHERE store.payment.payment_id = '0e3df8f3-2225-46e2-b660-a4f3332891ed'
-        ) FOR listing IN listings LOOP
-
-        END LOOP;
-
-        FOR listing (purchase_id) IN
-            SELECT
-                store.payment.purchase_id,
-                store.listing_product.product_id,
-                store.listing_product.lifetime_id,
-                store.purchase_listing.listing_count,
-                store.listing_product.product_count,
-                2
-            FROM store.payment
-            LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
-            LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
-            WHERE store.payment.payment_id = '0e3df8f3-2225-46e2-b660-a4f3332891ed'
-        LOOP
-
-        END LOOP;
-
-
-
-        -- BEGIN;
-
-        -- WITH purchased_products (purchase_id, product_id, lifetime_id, listing_count, product_count) AS (
-        --     SELECT
-        --         store.payment.purchase_id,
-        --         store.listing_product.product_id,
-        --         store.listing_product.lifetime_id,
-        --         store.purchase_listing.listing_count,
-        --         store.listing_product.product_count
-        --     FROM store.payment
-        --     LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
-        --     LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
-        --     WHERE store.payment.payment_id = NEW.payment_id
-        -- )
-        -- total product count is row * listing count * product count
-
-
-        -- INSERT INTO store.purchased_product (purchase_id, product_id, lifetime_id)
-        -- VALUES ()
-
-
-        -- COMMIT;
+        -- Our objective here is to insert purchased products in a single insert.
+        -- This is a bit tricky as we go from a (product, quantity) scheme to one record per product,
+        -- as we want to record product use individually
+        -- We use a join on a list of numbers to select one line per product instance
+        WITH numbers_list (number) AS (
+            -- Generate a list of numbers from 1 to whatever the maximum quantity is
+            -- Quantity comes from two different tables, so we calculate the max from both of them
+            -- This is dynamic because while it does not matter if we have extra numbers,
+            -- we must have no missing numbers, else the query would silently fail to insert all required records
+            SELECT *
+            FROM generate_series(1, (
+                SELECT MAX(quantity) FROM (
+                    SELECT store.listing_product.quantity AS quantity
+                    FROM store.listing_product
+                    UNION ALL
+                    SELECT store.purchase_listing.quantity AS quantity
+                    FROM store.purchase_listing
+                ) AS quantities
+            )::int)
+        )
+        INSERT INTO store.purchased_product (purchase_id, product_id, lifetime_id)
+        SELECT
+            store.payment.purchase_id,
+            store.listing_product.product_id,
+            store.listing_product.lifetime_id
+        FROM store.payment
+        LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
+        -- join on numbers list to get one record per purchase listing instance
+        LEFT JOIN numbers_list AS listing_numbers ON listing_numbers.number <= store.purchase_listing.quantity
+        LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
+        -- join on numbers list to get one record per listing product instance
+        LEFT JOIN numbers_list AS product_numbers ON product_numbers.number <= store.listing_product.quantity
+        WHERE store.payment.payment_id = NEW.payment_id;
     END IF;
     RETURN NEW;
 END;

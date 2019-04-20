@@ -38,6 +38,7 @@ CREATE TABLE calendar.lifetime (
     description TEXT,
     "start" DATE NOT NULL,
     "end" DATE NOT NULL,
+    CHECK ("start" <= "end"),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
