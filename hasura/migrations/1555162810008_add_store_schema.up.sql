@@ -57,7 +57,8 @@ CREATE TRIGGER store_listing_set_updated_at BEFORE UPDATE ON store.listing
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.listing_product (
-    listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
+    listing_id UUID NOT NULL REFERENCES store.listing (listing_id)
+        ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES store.product (product_id),
     quantity INT NOT NULL CHECK (quantity > 0),
     price INT NOT NULL CHECK (price >= 0),
@@ -78,7 +79,8 @@ CREATE TRIGGER store_purchase_set_updated_at BEFORE UPDATE ON store.purchase
 -- puchase cannot be updated while a payment exists
 
 CREATE TABLE store.purchase_listing (
-    purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
+    purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id)
+        ON DELETE CASCADE,
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
     quantity INT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -91,7 +93,8 @@ CREATE TRIGGER store_purchase_listing_set_updated_at BEFORE UPDATE ON store.purc
 
 CREATE TABLE store.payment (
     payment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    purchase_id UUID UNIQUE NOT NULL REFERENCES store.purchase (purchase_id),
+    purchase_id UUID UNIQUE NOT NULL REFERENCES store.purchase (purchase_id)
+        ON DELETE CASCADE,
     -- pending payment data goes here
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
@@ -101,7 +104,8 @@ CREATE TRIGGER store_payment_set_updated_at BEFORE UPDATE ON store.payment
 
 CREATE TABLE store.payment_completion (
     payment_completion_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    payment_id UUID UNIQUE NOT NULL REFERENCES store.payment (payment_id),
+    payment_id UUID UNIQUE NOT NULL REFERENCES store.payment (payment_id)
+        ON DELETE CASCADE,
     cancelled BOOLEAN NOT NULL DEFAULT FALSE,
     -- successful payment data goes here
     -- when this is created, redeemable products should be created too
@@ -130,7 +134,8 @@ CREATE TRIGGER store_invoice_set_updated_at BEFORE UPDATE ON store.invoice
 -- create when payment is confirmed
 CREATE TABLE store.purchased_product (
     purchased_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
+    purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id)
+        ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES store.product (product_id),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -141,7 +146,8 @@ CREATE TRIGGER store_puchased_product_set_updated_at BEFORE UPDATE ON store.purc
 
 CREATE TABLE store.purchased_product_usage (
     purchased_product_usage_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    purchased_product_id UUID NOT NULL REFERENCES store.purchased_product (purchased_product_id),
+    purchased_product_id UUID NOT NULL REFERENCES store.purchased_product (purchased_product_id)
+        ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),

@@ -38,7 +38,8 @@ CREATE TABLE staff.role (
 );
 
 CREATE TABLE staff.user_role (
-    user_id UUID REFERENCES staff.user(user_id),
+    user_id UUID REFERENCES staff.user(user_id)
+        ON DELETE CASCADE,
     role_id UUID REFERENCES staff.role(role_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

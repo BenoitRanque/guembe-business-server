@@ -49,7 +49,8 @@ CREATE TRIGGER calendar_lifetime_set_updated_at BEFORE UPDATE ON calendar.lifeti
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE calendar.lifetime_weekday (
-    lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
+    lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id)
+        ON DELETE CASCADE,
     weekday_id INT NOT NULL REFERENCES calendar.weekday (weekday_id),
     PRIMARY KEY (lifetime_id, weekday_id)
 );
