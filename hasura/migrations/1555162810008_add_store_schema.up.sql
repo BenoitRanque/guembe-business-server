@@ -47,6 +47,9 @@ CREATE TABLE store.listing (
     description TEXT,
     available_from DATE NOT NULL, -- when this will be available in store
     available_to DATE NOT NULL,
+    -- TODO: add trigger to validate stock
+    -- might validate stock in payment creation (race condition?)
+    -- validate stock in trigger before payment creation. Throw error on failure.
     available_stock INTEGER CHECK (available_stock IS NULL OR available_stock > 0),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
@@ -55,7 +58,7 @@ CREATE TABLE store.listing (
 );
 CREATE TRIGGER store_listing_set_updated_at BEFORE UPDATE ON store.listing
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
+-- TODO: verify if it is possible to use an after trigger to check if the listing has children 
 CREATE TABLE store.listing_product (
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id)
         ON DELETE CASCADE,
