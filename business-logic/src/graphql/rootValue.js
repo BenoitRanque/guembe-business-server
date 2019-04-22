@@ -8,16 +8,56 @@ const khipu = require('../utils/khipu')
 
 
 const rootValue = {
+  async store_checkout ({ purchase_id }, ctx) {
+    // verify auth
+    const session = getClientSession(ctx)
+    if (!session) {
+      throw new Error(`Access Denied`)
+    }
+    const client_id = session['x-hasura-client-id']
+
+    // verify purchase ownership before creating payment
+    const query = /* SQL */`
+
+      INSERT INTO store.payment (purchase_id)
+      SELECT $1
+      WHERE EXISTS (
+        SELECT 1 FROM store.purchase
+        WHERE store.purchase.purchase_id = $1
+        AND store.purchase.client_id = $2
+      ) RETURNING payment_id;
+    `
+
+    // validated purchase. Give nice friendly error message on failure.
+    // Note at this point changes to purchase are still possible if exploiting. Not safe
+
+
+    // Create payment locally. Trigger will take care of verifying payment, and to determine atual purchase total price
+
+    try {
+      // use this information to create payment remotely.
+      // If this fails for any reason, make sure to roll back payment creation
+      const response = await ctx.db.query(query, [ purchase_id, client_id ])
+
+      console.log(response)
+
+      // update payment locally with external data
+    } catch (error) {
+      // this should never happen. If we reach here, something went very wrong and we should crash the server
+      console.error(error)
+      throw error
+    }
+  },
   async test (args, ctx) {
     try {
       // validate sale input (here we could use custom logic)
 
-      // const result = await khipu.postPayments({
+      const result = await khipu.postPayments({
 
-      //   amount: '100',
-      //   // amount: Number(100).toFixed(2),
-      //   subject: 'TestPayment1'
-      // })
+        amount: '100',
+        // amount: Number(100).toFixed(2),
+        subject: 'TestPayment1'
+      })
       //     { payment_id: '3gpzl6hfvbff',
       // payment_url: 'https://khipu.com/payment/info/3gpzl6hfvbff',
       // app_url: 'khipu:///pos/3gpzl6hfvbff',
@@ -26,7 +66,7 @@ const rootValue = {
 
       // const result = await khipu.getBanks()
 
-      const result = await khipu.getPaymentsId('3gpzl6hfvbff')
+      // const result = await khipu.getPaymentsId('3gpzl6hfvbff')
 
       console.log(result)
 
@@ -115,8 +155,8 @@ const rootValue = {
 
 function getClientToken ({ client_id }) {
   const claims = {
-    'x-hasura-default-role': [ 'client' ],
-    'x-hasura-allowed-roles': 'client',
+    'x-hasura-default-role': 'client',
+    'x-hasura-allowed-roles': ['client'],
     'x-hasura-client-id': client_id
   }
   return jwt.sign({ 'x-hasura': claims }, process.env.AUTH_JWT_SECRET)
@@ -243,6 +283,16 @@ async function getOAuthGoogle (redirect_uri, code) {
     middle_name: middle_name ? middle_name : '',
     last_name: family_name ? family_name : ''
   }
+}
+
+function getClientSession (ctx) {
+  const Authorization = ctx.get('Authorization')
+  if (Authorization) {
+    const token = Authorization.replace('Bearer ', '')
+    const session = jwt.verify(token, process.env.AUTH_JWT_SECRET)
+    return session
+  }
+  return null
 }
 
 module.exports = rootValue

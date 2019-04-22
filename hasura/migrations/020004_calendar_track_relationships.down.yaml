@@ -22,3 +22,27 @@
       name: weekday
       schema: calendar
   type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: holiday
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: holiday
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: lifetime
+      schema: calendar
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: lifetime
+      schema: calendar
+  type: drop_relationship

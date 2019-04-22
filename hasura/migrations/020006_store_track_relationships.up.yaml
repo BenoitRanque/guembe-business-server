@@ -328,3 +328,12 @@
           name: purchase_listing
           schema: store
   type: create_array_relationship
+
+- args:
+    name: purchase
+    table:
+      name: invoice
+      schema: store
+    using:
+      foreign_key_constraint_on: purchase_id
+  type: create_object_relationship

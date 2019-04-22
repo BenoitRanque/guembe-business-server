@@ -58,7 +58,7 @@ CREATE TABLE store.listing (
 );
 CREATE TRIGGER store_listing_set_updated_at BEFORE UPDATE ON store.listing
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
--- TODO: verify if it is possible to use an after trigger to check if the listing has children 
+-- TODO: verify if it is possible to use an after trigger to check if the listing has children
 CREATE TABLE store.listing_product (
     listing_id UUID NOT NULL REFERENCES store.listing (listing_id)
         ON DELETE CASCADE,
@@ -72,7 +72,7 @@ CREATE TABLE store.listing_product (
 CREATE TABLE store.purchase (
     purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL REFERENCES store.client (client_id),
-    cancelled BOOLEAN NOT NULL DEFAULT FALSE,
+    locked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -98,7 +98,20 @@ CREATE TABLE store.payment (
     payment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_id UUID UNIQUE NOT NULL REFERENCES store.purchase (purchase_id)
         ON DELETE CASCADE,
-    -- pending payment data goes here
+    amount INTEGER NOT NULL,
+    -- khipu payment data goes here
+    khipu_payment_id TEXT UNIQUE,
+    khipu_payment_url TEXT,
+    khipu_app_url TEXT,
+    khipu_pay_me_url TEXT,
+    khipu_amount TEXT,
+    khipu_subject TEXT,
+    khipu_body TEXT,
+    khipu_payer_name TEXT,
+    khipu_payer_email TEXt,
+    khipu_status TEXT,
+    khipu_conciliation_date TIMESTAMP WITH TIME ZONE,
+    khipu_receipt_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -249,5 +262,31 @@ $$ language 'plpgsql';
 CREATE TRIGGER store_payment_completion_create_purchased_products
     AFTER INSERT ON store.payment_completion
     FOR EACH ROW EXECUTE FUNCTION store.create_purchased_products();
+
+CREATE FUNCTION store.validate_and_lock_purchase_before_payment()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- lock purchase
+    UPDATE store.purchase
+    SET locked = true
+    WHERE purchase_id = NEW.purchase_id;
+    -- calculate amount to pay
+    SELECT store.purchase_listing.quantity
+        * store.listing_product.quantity
+        * store.listing_product.price
+        AS total
+    -- add total to new payment
+    INTO NEW.amount
+    FROM store.purchase_listing
+    LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
+    WHERE store.purchase_listing.purchase_id = NEW.purchase_id;
+
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
+    BEFORE INSERT ON store.payment
+    FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
 
 COMMIT;

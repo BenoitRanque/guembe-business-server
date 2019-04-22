@@ -214,3 +214,10 @@
       name: purchase
       schema: store
   type: drop_relationship
+
+- args:
+    relationship: purchase
+    table:
+      name: invoice
+      schema: store
+  type: drop_relationship

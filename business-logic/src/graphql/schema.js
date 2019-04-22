@@ -34,10 +34,24 @@ const schema = buildSchema(/* GraphQL */`
 
   scalar JSON
 
+  type StoreCheckoutPayload {
+    payment_url: String!
+    pay_me_url: String!
+    app_url: String!
+  }
+
+  input StoreCheckoutInput {
+    purchase_id: UUID!
+  }
+
   type Query {
     test: JSON
     client_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
     user_authentication (username: String! password: String!): UserCrededentials!
+  }
+
+  type Mutation {
+    store_checkout (input: StoreCheckoutInput!): StoreCheckoutPayload!
   }
 `)
 
