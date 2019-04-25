@@ -6,12 +6,6 @@ CREATE TABLE store.authentication_provider (
     provider_name TEXT PRIMARY KEY
 );
 
-INSERT INTO store.authentication_provider
-    (provider_name)
-VALUES
-    ('google'),
-    ('facebook');
-
 CREATE TABLE store.client (
     client_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,
@@ -29,10 +23,18 @@ CREATE TABLE store.client (
 CREATE TRIGGER store_client_set_updated_at BEFORE UPDATE ON store.client
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE store.taxable_activity (
+    taxable_activity_id INTEGER PRIMARY KEY,
+    description TEXT
+);
+
 CREATE TABLE store.product (
     product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    product_name TEXT,
+    public_name TEXT,
     description TEXT,
+    private_name TEXT,
+    internal_product_id TEXT,
+    taxable_activity_id INTEGER NOT NULL REFERENCES store.taxable_activity (taxable_activity_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
@@ -141,6 +143,11 @@ CREATE TABLE store.invoice (
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
     -- send email invoice when this is created
     -- invoice data must go here.
+
+
+    izi_id INTEGER,
+    izi_timestamp TIMESTAMP WITH TIME ZONE,
+    izi_link TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -164,34 +171,38 @@ CREATE TABLE store.purchased_product_usage (
     purchased_product_usage_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchased_product_id UUID NOT NULL REFERENCES store.purchased_product (purchased_product_id)
         ON DELETE CASCADE,
+    cancelled BOOLEAN DEFAULT false,
+    cancelled_motive TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
-    updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
-    -- this might not be sufficient. Need checking with hasura permissions
-    cancelled BOOLEAN NOT NULL DEFAULT FALSE
+    updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
 );
 CREATE TRIGGER store_purchased_product_usage_set_updated_at BEFORE UPDATE ON store.purchased_product_usage
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- once a payment exists, a purchase cannot be modified
-CREATE FUNCTION store.do_not_modify_paid_purchase()
+CREATE FUNCTION store.do_not_modify_locked_purchase()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF EXISTS(SELECT 1 FROM store.payment WHERE purchase_id = OLD.purchase_id) THEN
-        RAISE EXCEPTION 'Modifying a paid purchase is not allowed';
+    IF EXISTS(
+        SELECT 1 FROM store.purchase
+        WHERE locked = true
+        AND purchase_id = OLD.purchase_id
+    ) THEN
+        RAISE EXCEPTION 'Modifying a locked purchase is not allowed';
     END IF;
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_purchase_do_not_modify_paid_purchase
-    BEFORE UPDATE OR DELETE ON store.purchase
-    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_paid_purchase();
+CREATE TRIGGER store_purchase_do_not_modify_locked_purchase
+    BEFORE DELETE ON store.purchase
+    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_locked_purchase();
 
-CREATE TRIGGER store_purchase_listing_do_not_modify_paid_purchase
+CREATE TRIGGER store_purchase_listing_do_not_modify_locked_purchase
     BEFORE UPDATE OR DELETE ON store.purchase_listing
-    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_paid_purchase();
+    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_locked_purchase();
 
 -- Each client can only have a single purchase without payment. Do not allow insert of another
 -- note unpaid means payment not created, no nescesarily completed.
@@ -288,5 +299,21 @@ $$ language 'plpgsql';
 CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
     BEFORE INSERT ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
+
+
+
+INSERT INTO store.authentication_provider
+    (provider_name)
+VALUES
+    ('google'),
+    ('facebook');
+
+INSERT INTO store.taxable_activity
+    (taxable_activity_id, description)
+VALUES
+    (71409, 'ACTIVIDADES DEPORTIVAS Y OTRAS ACTIVIDADES DE ESPARCIMIENTO'),
+    (72203, 'RESTAURANTES'),
+    (72201, 'HOTELES'),
+    (60202, 'VENTA AL POR MENOR DE PRODUCTOS TEXTILES, PRENDAS DE VESTIR, CALZADOS Y ARTÍCULOS DE CUERO');
 
 COMMIT;
