@@ -102,36 +102,26 @@ CREATE TABLE store.payment (
     purchase_id UUID UNIQUE NOT NULL REFERENCES store.purchase (purchase_id)
         ON DELETE CASCADE,
     amount INTEGER NOT NULL,
+    completed BOOLEAN NOT NULL DEFAULT false,
+    cancelled BOOLEAN NOT NULL DEFAULT false,
     -- khipu payment data goes here
-    khipu_payment_id TEXT UNIQUE,
-    khipu_payment_url TEXT,
-    khipu_app_url TEXT,
-    khipu_pay_me_url TEXT,
-    khipu_amount TEXT,
+    khipu_status TEXT NOT NULL DEFAULT 'pending',
+    khipu_status_detail TEXT NOT NULL DEFAULT 'pending',
     khipu_subject TEXT,
     khipu_body TEXT,
     khipu_payer_name TEXT,
-    khipu_payer_email TEXt,
-    khipu_status TEXT,
-    khipu_conciliation_date TIMESTAMP WITH TIME ZONE,
-    khipu_receipt_url TEXT,
+    khipu_payer_email TEXT,
+    khipu_payment_id TEXT UNIQUE,
+    khipu_payment_url TEXT,
+    khipu_simplified_transfer_url TEXT,
+    khipu_transfer_url TEXT,
+    khipu_webpay_url TEXT,
+    khipu_app_url TEXT,
+    khipu_ready_for_terminal BOOLEAN,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 CREATE TRIGGER store_payment_set_updated_at BEFORE UPDATE ON store.payment
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TABLE store.payment_completion (
-    payment_completion_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    payment_id UUID UNIQUE NOT NULL REFERENCES store.payment (payment_id)
-        ON DELETE CASCADE,
-    cancelled BOOLEAN NOT NULL DEFAULT FALSE,
-    -- successful payment data goes here
-    -- when this is created, redeemable products should be created too
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
-CREATE TRIGGER store_payment_completion_set_updated_at BEFORE UPDATE ON store.payment_completion
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- this is created in response to khipu cancellation of payment
@@ -230,7 +220,7 @@ CREATE TRIGGER store_purchase_allow_one_unpaid_purchase_per_client
 CREATE FUNCTION store.create_purchased_products()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.cancelled = FALSE THEN
+    IF NEW.completed = true THEN
         -- Our objective here is to insert purchased products in a single insert.
         -- This is a bit tricky as we go from a (product, quantity) scheme to one record per product,
         -- as we want to record product use individually
@@ -269,19 +259,18 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_payment_completion_create_purchased_products
-    AFTER INSERT ON store.payment_completion
+CREATE TRIGGER store_payment_create_purchased_products
+    AFTER INSERT ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.create_purchased_products();
 
 CREATE FUNCTION store.validate_and_lock_purchase_before_payment()
 RETURNS TRIGGER AS $$
 BEGIN
     -- validate available stock
-    -- we select purchsase listings where:
+    -- we select purchasse listings where:
         -- listing avaialable stock is not null (meaning there is a limit)
-        -- the purchase listing belongs to the current purchase
-        -- or locked purchases where the payment is not cancelled
-        -- elonging to either the current purchase, or locked purchase where the payment is not cancelled
+        -- the purchase listing belongs to the current purchase or
+        -- locked purchases where the payment is not cancelled (but not nescesarily present, payment may be pending)
     -- we aggregate those by listing id, and check if the sum of the quantities is more than the available stock
     IF EXISTS(
         SELECT 1
@@ -289,11 +278,11 @@ BEGIN
             LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
             LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
             LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
-            LEFT JOIN store.payment_completion ON store.payment_completion.payment_id = store.payment.payment_id
         WHERE NOT store.listing.available_stock = NULL
-        AND (store.purchase_listing.purchase_id = NEW.purchase_id OR (store.purchase_id.locked = true AND NOT store.payment_completion.cancelled = true))
+        AND (store.purchase_listing.purchase_id = NEW.purchase_id OR (store.purchase_id.locked = true AND NOT store.payment.cancelled = true))
         GROUP BY store.store.purchase_listing.listing_id
         HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
+        AND store.purchase_listing.purchase_id = NEW.purchase_id
     ) THEN
         RAISE EXCEPTION 'Cannot lock current sale, insufficient stock';
     END IF;
@@ -302,6 +291,7 @@ BEGIN
     SET locked = true
     WHERE purchase_id = NEW.purchase_id;
     -- calculate amount to pay
+    -- TODO: verify how many rows this query returns. I have doubts
     SELECT store.purchase_listing.quantity
         * store.listing_product.quantity
         * store.listing_product.price
@@ -319,7 +309,6 @@ $$ language 'plpgsql';
 CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
     BEFORE INSERT ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
-
 
 
 INSERT INTO store.authentication_provider

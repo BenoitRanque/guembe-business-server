@@ -72,6 +72,7 @@ services:
       PGDATABASE: ${PG_DATABASE}
       PGPASSWORD: ${PG_PASSWORD}
       PGPORT: 5432
+      PUBLIC_HOSTNAME: ${PUBLIC_HOSTNAME}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
       OAUTH_PROVIDER_FACEBOOK_CLIENT_ID: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_ID}
       OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET}
@@ -80,6 +81,7 @@ services:
       KHIPU_CLIENT_ID: ${KHIPU_CLIENT_ID}
       KHIPU_CLIENT_SECRET: ${KHIPU_CLIENT_SECRET}
       IZI_CLIENT_ID: ${IZI_CLIENT_ID}
+      IZI_NIT_EMISOR: ${IZI_NIT_EMISOR}
     # TODO: move secets to separate .env files, enable .env files per container. Unsure if doable
     # env_file:
     #   - ./private/.env

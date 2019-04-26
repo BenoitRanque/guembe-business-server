@@ -35,19 +35,37 @@ const schema = buildSchema(/* GraphQL */`
   scalar JSON
 
   type StoreCheckoutPayload {
-    payment_url: String!
-    pay_me_url: String!
-    app_url: String!
+    payment_id: UUID!
+    khipu_payment_url: String!
+    khipu_simplified_transfer_url: String!
+    khipu_transfer_url: String!
+    khipu_webpay_url: String!
+    khipu_app_url: String!
+    khipu_ready_for_terminal: Boolean!
+  }
+
+  input StoreCheckoutPaymentInput {
+    payer_email: String!
+    payer_name: String!
+    return_url: String!
+    cancel_url: String!
+  }
+
+  input StoreCheckoutInvoiceInput {
+    nit_comprador: String!
+    razon_social: String!
   }
 
   input StoreCheckoutInput {
     purchase_id: UUID!
+    payment: StoreCheckoutPaymentInput!
+    invoice: StoreCheckoutPaymentInput!
   }
 
   type Query {
     test: JSON
-    client_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
-    user_authentication (username: String! password: String!): UserCrededentials!
+    store_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
+    staff_authentication (username: String! password: String!): UserCrededentials!
   }
 
   type Mutation {

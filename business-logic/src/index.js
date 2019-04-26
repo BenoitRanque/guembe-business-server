@@ -7,7 +7,9 @@ const app = express()
 const port = 3000
 
 app.use(sessionMiddleware)
+
 app.use('/graphql', require('./graphql'))
+app.use('/hooks', require('./hooks'))
 
 app.listen({ port }, () => {
   console.log(`Listening on port ${port}`);

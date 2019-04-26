@@ -2,8 +2,6 @@ const jwt = require('jsonwebtoken')
 
 function sessionMiddleware (req, res, next) {
   // get session from header
-  let token = null
-
   const Authorization = req.get('Authorization')
   if (Authorization) {
     const token = Authorization.replace('Bearer ', '')
@@ -66,13 +64,21 @@ function requireRoleMiddleware (roles) {
   }
 }
 
+function requireClientRole(session) {
+  if (!session || !session['x-hasura-allowed-roles'].includes('client')) {
+    throw new Error(`Access Denied: client role is required`)
+  }
+  return true
+}
+
 module.exports = {
   sessionMiddleware,
-  getAccountId,
-  getRoles,
-  getUsername,
-  requireSession,
-  requireRole,
-  requireSessionMiddleware,
-  requireRoleMiddleware
+  requireClientRole
+  // getAccountId,
+  // getRoles,
+  // getUsername,
+  // requireSession,
+  // requireRole,
+  // requireSessionMiddleware,
+  // requireRoleMiddleware
 }
