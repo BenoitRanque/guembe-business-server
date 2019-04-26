@@ -190,18 +190,17 @@
   type: create_object_relationship
 
 - args:
-    name: invoice
+    name: invoices
     table:
       name: purchase
       schema: store
     using:
-      manual_configuration:
-        column_mapping:
-          purchase_id: purchase_id
-        remote_table:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
           name: invoice
           schema: store
-  type: create_object_relationship
+  type: create_array_relationship
 
 - args:
     name: payment
@@ -276,18 +275,17 @@
   type: create_object_relationship
 
 - args:
-    name: usage
+    name: usages
     table:
       name: purchased_product
       schema: store
     using:
-      manual_configuration:
-        column_mapping:
-          purchased_product_id: purchased_product_id
-        remote_table:
+      foreign_key_constraint_on:
+        column: purchased_product_id
+        table:
           name: purchased_product_usage
           schema: store
-  type: create_object_relationship
+  type: create_array_relationship
 
 - args:
     name: created_by_user

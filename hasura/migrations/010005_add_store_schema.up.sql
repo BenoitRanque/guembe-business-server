@@ -45,8 +45,9 @@ CREATE TRIGGER store_product_set_updated_at BEFORE UPDATE ON store.product
 
 CREATE TABLE store.listing (
     listing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    listing_name TEXT,
+    public_name TEXT,
     description TEXT,
+    private_name TEXT,
     available_from DATE NOT NULL, -- when this will be available in store
     available_to DATE NOT NULL,
     -- TODO: add trigger to validate stock
@@ -143,8 +144,6 @@ CREATE TABLE store.invoice (
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
     -- send email invoice when this is created
     -- invoice data must go here.
-
-
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
     izi_link TEXT,
@@ -277,6 +276,27 @@ CREATE TRIGGER store_payment_completion_create_purchased_products
 CREATE FUNCTION store.validate_and_lock_purchase_before_payment()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- validate available stock
+    -- we select purchsase listings where:
+        -- listing avaialable stock is not null (meaning there is a limit)
+        -- the purchase listing belongs to the current purchase
+        -- or locked purchases where the payment is not cancelled
+        -- elonging to either the current purchase, or locked purchase where the payment is not cancelled
+    -- we aggregate those by listing id, and check if the sum of the quantities is more than the available stock
+    IF EXISTS(
+        SELECT 1
+        FROM store.purchase_listing
+            LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
+            LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
+            LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
+            LEFT JOIN store.payment_completion ON store.payment_completion.payment_id = store.payment.payment_id
+        WHERE NOT store.listing.available_stock = NULL
+        AND (store.purchase_listing.purchase_id = NEW.purchase_id OR (store.purchase_id.locked = true AND NOT store.payment_completion.cancelled = true))
+        GROUP BY store.store.purchase_listing.listing_id
+        HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
+    ) THEN
+        RAISE EXCEPTION 'Cannot lock current sale, insufficient stock';
+    END IF;
     -- lock purchase
     UPDATE store.purchase
     SET locked = true

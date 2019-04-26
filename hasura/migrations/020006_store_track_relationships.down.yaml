@@ -125,7 +125,7 @@
   type: drop_relationship
 
 - args:
-    relationship: invoice
+    relationship: invoices
     table:
       name: purchase
       schema: store
@@ -181,7 +181,7 @@
   type: drop_relationship
 
 - args:
-    relationship: usage
+    relationship: usages
     table:
       name: purchased_product
       schema: store

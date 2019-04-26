@@ -58,3 +58,8 @@
       name: purchased_product_usage
       schema: store
   type: untrack_table
+- args:
+    table:
+      name: taxable_activity
+      schema: store
+  type: untrack_table
