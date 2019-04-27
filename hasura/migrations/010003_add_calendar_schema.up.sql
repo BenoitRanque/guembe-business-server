@@ -19,7 +19,7 @@ INSERT INTO calendar.weekday (weekday_id, weekday_name) VALUES
 
 CREATE TABLE calendar.holiday (
     holiday_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    holiday_name TEXT NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     holiday_date DATE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

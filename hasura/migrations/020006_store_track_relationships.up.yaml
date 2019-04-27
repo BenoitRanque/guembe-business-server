@@ -312,3 +312,12 @@
     using:
       foreign_key_constraint_on: purchase_id
   type: create_object_relationship
+
+- args:
+    name: payment_status
+    table:
+      name: payment
+      schema: store
+    using:
+      foreign_key_constraint_on: status
+  type: create_object_relationship

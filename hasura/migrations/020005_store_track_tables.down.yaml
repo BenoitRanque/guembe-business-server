@@ -58,3 +58,8 @@
       name: taxable_activity
       schema: store
   type: untrack_table
+- args:
+    table:
+      name: payment_status
+      schema: store
+  type: untrack_table

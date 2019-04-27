@@ -46,29 +46,58 @@ async function updatePayment ({
   app_url: khipu_app_url,
   ready_for_terminal: khipu_ready_for_terminal
 }, db) {
-  const { rows: updatedPayment } = db.query(`
+  let status = null
+
+  switch (khipu_status_detail) {
+    case 'pending':
+      status = 'PENDING'
+      break
+    case 'normal':
+      status = 'COMPLETED'
+      break
+    case 'marked-paid-by-receiver':
+      status = 'COMPLETED'
+      break
+    case 'rejected-by-payer':
+      status = 'REJECTED'
+      break
+    case 'marked-as-abuse':
+      status = 'REJECTED'
+      break
+    case 'reversed':
+      status = 'REVERSED'
+      break
+    default:
+      throw new Error(`Unknown khipu_status_detail ${khipu_status_detail}`)
+  }
+
+  // if expired for more than 10 minutes, set expired
+  if (new Date()) {
+    status = 'EXPIRED'
+  }
+
+  const { rows: [ updatedPayment ] } = db.query(`
     UPDATE store.payment SET
       payment_id = $2,
-      completed = $3,
-      cancelled = $4,
-      khipu_status = $5,
-      khipu_status_detail = $6,
-      khipu_subject = $7,
-      khipu_body = $8,
-      khipu_payer_name = $9,
-      khipu_payer_email = $10,
-      khipu_payment_id = $11,
-      khipu_payment_url = $12,
-      khipu_simplified_transfer_url = $13,
-      khipu_transfer_url = $14,
-      khipu_webpay_url = $15,
-      khipu_app_url = $16,
-      khipu_ready_for_terminal = $17
-    WHERE store.payment.payment_id = $1;
+      status = $3,
+      khipu_status = $4,
+      khipu_status_detail = $5,
+      khipu_subject = $6,
+      khipu_body = $7,
+      khipu_payer_name = $8,
+      khipu_payer_email = $9,
+      khipu_payment_id = $10,
+      khipu_payment_url = $11,
+      khipu_simplified_transfer_url = $12,
+      khipu_transfer_url = $13,
+      khipu_webpay_url = $14,
+      khipu_app_url = $15,
+      khipu_ready_for_terminal = $16
+    WHERE store.payment.payment_id = $1
+    RETURNING payment_id, purchase_id, completed, cancelled;
   `, [
     payment_id,
-    false, // completed
-    false, // cancelled
+    status,
     khipu_status,
     khipu_status_detail,
     khipu_subject,

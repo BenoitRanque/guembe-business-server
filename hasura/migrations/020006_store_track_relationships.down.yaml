@@ -207,3 +207,10 @@
       name: invoice
       schema: store
   type: drop_relationship
+
+- args:
+    relationship: payment_status
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
