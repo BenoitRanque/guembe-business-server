@@ -114,29 +114,6 @@
   type: create_object_relationship
 
 - args:
-    name: payment_completion
-    table:
-      name: payment
-      schema: store
-    using:
-      manual_configuration:
-        column_mapping:
-          payment_id: payment_id
-        remote_table:
-          name: payment_completion
-          schema: store
-  type: create_object_relationship
-
-- args:
-    name: payment
-    table:
-      name: payment_completion
-      schema: store
-    using:
-      foreign_key_constraint_on: payment_id
-  type: create_object_relationship
-
-- args:
     name: created_by_user
     table:
       name: product

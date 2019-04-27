@@ -23,10 +23,6 @@
     schema: store
   type: add_existing_table_or_view
 - args:
-    name: payment_completion
-    schema: store
-  type: add_existing_table_or_view
-- args:
     name: product
     schema: store
   type: add_existing_table_or_view

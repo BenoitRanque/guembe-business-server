@@ -30,11 +30,6 @@
   type: untrack_table
 - args:
     table:
-      name: payment_completion
-      schema: store
-  type: untrack_table
-- args:
-    table:
       name: product
       schema: store
   type: untrack_table

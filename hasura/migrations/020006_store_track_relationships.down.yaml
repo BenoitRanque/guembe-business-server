@@ -76,20 +76,6 @@
   type: drop_relationship
 
 - args:
-    relationship: payment_completion
-    table:
-      name: payment
-      schema: store
-  type: drop_relationship
-
-- args:
-    relationship: payment
-    table:
-      name: payment_completion
-      schema: store
-  type: drop_relationship
-
-- args:
     relationship: created_by_user
     table:
       name: product
