@@ -1,6 +1,6 @@
-const store_checkout = require('../service/storeCheckout')
-const store_authentication = require('../service/storeAuthentication')
-const staff_authentication = require('../service/staffAuthentication')
+const store_checkout = require('../services/resolveStoreCheckout')
+const store_authentication = require('../services/resolveStoreAuthentication')
+const staff_authentication = require('../services/resolveStaffAuthentication')
 
 // note to self
 // add mutations to manually check if payment is completed, and run the update if it is

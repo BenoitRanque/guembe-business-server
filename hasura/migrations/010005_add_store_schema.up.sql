@@ -141,7 +141,7 @@ CREATE TABLE store.payment (
     khipu_bank_account_number TEXT, -- (String) Número de cuenta bancaria del pagador
     khipu_out_of_date_conciliation BOOLEAN, -- (Boolean) Es 'true' si la conciliación del pago fue hecha luego de la fecha de expiración
     khipu_transaction_id TEXT, -- (String) Identificador del pago asignado por el cobrador
-    khipu_custom TEXT, -- (String) Campo genérico que asigna el cobrador al momento de hacer el pago
+    khipu_custom JSON, -- (String) Campo genérico que asigna el cobrador al momento de hacer el pago
     khipu_responsible_user_email TEXT, -- (String) Correo electrónico de la persona responsable del pago
     khipu_send_reminders BOOLEAN, -- (Boolean) Es 'true' cuando este es un cobro por correo electrónico y khipu enviará recordatorios
     khipu_send_email BOOLEAN, -- (Boolean) Es 'true' cuando khipu enviará el cobro por correo electrónico
@@ -161,10 +161,16 @@ CREATE TABLE store.invoice (
     invoice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
     -- send email invoice when this is created
+    izi_emisor TEXT,
+    izi_comprador TEXT,
+    izi_razon_social TEXT,
+    izi_lista_items JSON,
+    izi_actividad_economica INTEGER NOT NULL REFERENCES store.taxable_activity (taxable_activity_id),
     -- invoice data must go here.
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
     izi_link TEXT,
+    UNIQUE (purchase_id, izi_actividad_economica)
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );

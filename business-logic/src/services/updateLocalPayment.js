@@ -39,7 +39,7 @@ module.exports = async function (payment_id, update, db) {
     'send_email',
     'payment_method'
   ].includes(column))) {
-    throw new Error(`Unexpected column name for payment update: \n ${JSON.stringify(khipuUpdate)} \n Possibly due to a khipu api update?`)
+    throw new Error(`Unexpected column name for payment update: \n ${JSON.stringify(update)} \n Possibly due to a khipu api update?`)
   }
   let status = null
 
@@ -63,28 +63,31 @@ module.exports = async function (payment_id, update, db) {
       status = 'REVERSED'
       break
     default:
-      throw new Error(`Unknown khipu_status_detail ${khipu_status_detail}`)
+      throw new Error(`Unknown khipu_status_detail ${update.status_detail}`)
   }
 
   // if expired for more than 10 minutes, set expired
-  if (new Date(expires_date).getTime() < new Date().getTime()) {
+  if (update.expires_date && new Date(update.expires_date).getTime() < (new Date().getTime()) + (10 * 60 * 1000)) {
     status = 'EXPIRED'
   }
 
   let updateFields = ''
   let updateValues = []
+  let returnFields = ''
 
   Object.keys(update).forEach((column, index) => {
     if (update[column] !== null) {
       updateFields += `, khipu_${column} = $${index + 3}`
       updateValues.push(update[column])
+      returnFields += `, khipu_${column}`
     }
   })
 
   const { rows: [ updatedPayment ] } = await db.query(`
     UPDATE store.payment
     SET status = $2${updateFields}
-    WHERE store.payment.payment_id = $1;
+    WHERE store.payment.payment_id = $1
+    RETURNING payment_id, purchase_id, amount, status${returnFields};
   `, [
     payment_id,
     status,
