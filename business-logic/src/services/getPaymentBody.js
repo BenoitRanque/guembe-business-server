@@ -1,4 +1,4 @@
-module.exports = async function getPaymentDetails(payment_id, db) {
+module.exports = async function getPaymentBody(payment_id, db) {
   const { rows: details } = await db.query(`
     SELECT
       store.product.public_name AS product,

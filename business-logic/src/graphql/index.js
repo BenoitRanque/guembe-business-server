@@ -2,13 +2,17 @@ const express = require('express')
 const graphqlHTTP = require('express-graphql')
 
 const schema = require('./schema')
-const rootValue = require('./rootValue')
+const queries = require('./queries')
+const mutations = require('./mutations')
 
 const app = express()
 
 app.use(graphqlHTTP(request => ({
   schema,
-  rootValue,
+  rootValue: {
+    ...queries,
+    ...mutations
+  },
   graphiql: true,
   context: request
 })))

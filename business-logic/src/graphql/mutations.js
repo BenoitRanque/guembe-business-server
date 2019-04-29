@@ -1,10 +1,11 @@
-const { requireClientRole } = require('../utils/session')
-const validateCheckoutInput = require('./validateCheckoutInput')
-const createLocalPayment = require('./createLocalPayment')
-const createRemotePayment = require('./createRemotePayment')
-const updateLocalPayment = require('./updateLocalPayment')
 
-module.exports = async function storeCheckout ({ purchase_id, payment, invoice }, ctx) {
+const { requireClientRole } = require('../utils/session')
+const validateCheckoutInput = require('../services/validateCheckoutInput')
+const createLocalPayment = require('../services/createLocalPayment')
+const createRemotePayment = require('../services/createRemotePayment')
+const updateLocalPayment = require('../services/updateLocalPayment')
+
+async function store_checkout ({ purchase_id, payment, invoice }, ctx) {
   // verify auth
   requireClientRole(ctx.session)
   const client_id = ctx.session['x-hasura-client-id']
@@ -35,4 +36,8 @@ module.exports = async function storeCheckout ({ purchase_id, payment, invoice }
   }
 
   return updatedLocalPayment
+}
+
+module.exports = {
+  store_checkout
 }

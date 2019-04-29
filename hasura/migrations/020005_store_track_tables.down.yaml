@@ -55,7 +55,7 @@
   type: untrack_table
 - args:
     table:
-      name: taxable_activity
+      name: economic_activity
       schema: store
   type: untrack_table
 - args:

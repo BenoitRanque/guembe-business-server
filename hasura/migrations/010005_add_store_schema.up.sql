@@ -23,8 +23,8 @@ CREATE TABLE store.client (
 CREATE TRIGGER store_client_set_updated_at BEFORE UPDATE ON store.client
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE store.taxable_activity (
-    taxable_activity_id INTEGER PRIMARY KEY,
+CREATE TABLE store.economic_activity (
+    economic_activity_id INTEGER PRIMARY KEY,
     description TEXT
 );
 
@@ -34,7 +34,7 @@ CREATE TABLE store.product (
     description TEXT,
     private_name TEXT,
     internal_product_id TEXT,
-    taxable_activity_id INTEGER NOT NULL REFERENCES store.taxable_activity (taxable_activity_id),
+    economic_activity_id INTEGER NOT NULL REFERENCES store.economic_activity (economic_activity_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
@@ -160,12 +160,12 @@ CREATE TRIGGER store_payment_set_updated_at BEFORE UPDATE ON store.payment
 CREATE TABLE store.invoice (
     invoice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
+    economic_activity_id INTEGER NOT NULL REFERENCES store.economic_activity (economic_activity_id),
     -- send email invoice when this is created
     izi_emisor TEXT,
     izi_comprador TEXT,
     izi_razon_social TEXT,
     izi_lista_items JSON,
-    izi_actividad_economica INTEGER NOT NULL REFERENCES store.taxable_activity (taxable_activity_id),
     -- invoice data must go here.
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
@@ -255,9 +255,21 @@ CREATE FUNCTION store.create_purchased_products()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.status != OLD.status THEN
-        IF NEW.status = 'PENDING' THEN
-            RAISE EXCEPTION 'Cannot change status to PENDING from %', OLD.status;
-        ELSE IF NEW.status = 'COMPLETED' THEN
+        IF OLD.status = 'PENDING' AND NEW.status = 'COMPLETED' THEN
+            -- 1 create invoices
+            INSERT INTO store.invoice (purchase_id, izi_actividad_economica)
+            SELECT
+                store.payment.purchase_id AS purchase_id,
+                store.product.economic_activity_id AS izi_actividad_economica,
+            FROM store.payment
+            LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.payment.purchase_id
+            LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
+            LEFT JOIN store.product ON store.listing_product.product_id = store.product.product_id
+            WHERE store.payment.payment_id = OLD.payment_id
+            GROUP BY store.product.economic_activity_id;
+
+            -- 2 create purchased products
+
             -- Our objective here is to insert purchased products in a single insert.
             -- This is a bit tricky as we go from a (product, quantity) scheme to one record per product,
             -- as we want to record product use individually
@@ -291,15 +303,10 @@ BEGIN
             -- join on numbers list to get one record per listing product instance
             LEFT JOIN numbers_list AS product_numbers ON product_numbers.number <= store.listing_product.quantity
             WHERE store.payment.payment_id = OLD.payment_id;
-        ELSE IF NEW.status = 'REJECTED' THEN
+        ELSE IF OLD.status = 'PENDING' AND NEW.status IN ('REJECTED', 'EXPIRED', 'REVERSED') THEN
             -- do nothing
-        ELSE IF NEW.status = 'EXPIRED' THEN
-            -- do nothing
-        ELSE IF NEW.status = 'REVERSED' THEN
-            DELETE FROM store.purchased_product
-            WHERE purchase_id = OLD.purchase_id;
         ELSE
-            RAISE EXCEPTION 'Cannot update payment: invalid value for payment status %', NEW.status;
+            RAISE EXCEPTION 'Cannot change payment status from % to %', OLD.status, NEW.status;
         END IF;
     END IF;
     RETURN NEW;
@@ -371,8 +378,8 @@ INSERT INTO store.payment_status (name, description) VALUES
     ('EXPIRED', 'expirado'),
     ('REVERSED', 'revertido');
 
-INSERT INTO store.taxable_activity
-    (taxable_activity_id, description)
+INSERT INTO store.economic_activity
+    (economic_activity_id, description)
 VALUES
     (71409, 'ACTIVIDADES DEPORTIVAS Y OTRAS ACTIVIDADES DE ESPARCIMIENTO'),
     (72203, 'RESTAURANTES'),

@@ -43,7 +43,7 @@
     schema: store
   type: add_existing_table_or_view
 - args:
-    name: taxable_activity
+    name: economic_activity
     schema: store
   type: add_existing_table_or_view
 - args:
