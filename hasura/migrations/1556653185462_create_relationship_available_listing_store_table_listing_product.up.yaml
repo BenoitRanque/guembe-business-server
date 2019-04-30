@@ -1,0 +1,13 @@
+- args:
+    name: available_listing
+    table:
+      name: listing_product
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          listing_id: listing_id
+        remote_table:
+          name: available_listing
+          schema: store
+  type: create_object_relationship

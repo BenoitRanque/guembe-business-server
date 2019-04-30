@@ -1,0 +1,16 @@
+- args:
+    headers:
+    - name: Authorization
+      value_from_env: HASURA_GRAPHQL_ADMIN_SECRET
+    insert:
+      columns: '*'
+    name: store_invoice_insert
+    retry_conf:
+      interval_sec: 30
+      num_retries: 20
+      timeout_sec: 120
+    table:
+      name: invoice
+      schema: store
+    webhook: http://business-logic:3000/hooks/hasura/store/invoice/insert
+  type: create_event_trigger

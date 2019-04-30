@@ -20,6 +20,11 @@
   type: untrack_table
 - args:
     table:
+      name: available_listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
       name: listing_product
       schema: store
   type: untrack_table

@@ -29,7 +29,6 @@ const schema = buildSchema(/* GraphQL */`
   enum OAuthProviderEnum {
     google
     facebook
-    github
   }
 
   scalar JSON
@@ -51,15 +50,9 @@ const schema = buildSchema(/* GraphQL */`
     cancel_url: String!
   }
 
-  input StoreCheckoutInvoiceInput {
-    nit_comprador: String!
-    razon_social: String!
-  }
-
   input StoreCheckoutInput {
     purchase_id: UUID!
     payment: StoreCheckoutPaymentInput!
-    invoice: StoreCheckoutPaymentInput!
   }
 
   type Query {

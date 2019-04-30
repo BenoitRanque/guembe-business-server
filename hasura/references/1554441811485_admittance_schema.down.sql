@@ -1,1 +1,0 @@
-drop schema admittance cascade;

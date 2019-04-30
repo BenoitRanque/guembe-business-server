@@ -75,7 +75,9 @@ CREATE TABLE store.listing_product (
 CREATE TABLE store.purchase (
     purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL REFERENCES store.client (client_id),
-    locked BOOLEAN NOT NULL DEFAULT FALSE,
+    locked BOOLEAN NOT NULL DEFAULT false,
+    buyer_business_name TEXT,
+    buyer_tax_identification_number TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -161,16 +163,11 @@ CREATE TABLE store.invoice (
     invoice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id),
     economic_activity_id INTEGER NOT NULL REFERENCES store.economic_activity (economic_activity_id),
-    -- send email invoice when this is created
-    izi_emisor TEXT,
-    izi_comprador TEXT,
-    izi_razon_social TEXT,
-    izi_lista_items JSON,
     -- invoice data must go here.
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
     izi_link TEXT,
-    UNIQUE (purchase_id, izi_actividad_economica)
+    UNIQUE (purchase_id, economic_activity_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -204,6 +201,21 @@ CREATE TABLE store.purchased_product_usage (
 CREATE TRIGGER store_purchased_product_usage_set_updated_at BEFORE UPDATE ON store.purchased_product_usage
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE VIEW store.available_listing AS
+SELECT
+    store.listing.listing_id,
+    store.listing.public_name,
+    store.listing.description
+FROM store.listing
+LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
+LEFT JOIN store.purchase ON store.purchase_listing.purchase_id = store.purchase.purchase_id
+WHERE (store.purchase.purchase_id IS NULL OR store.purchase.locked = true)
+    AND store.listing.available_from <= NOW()
+    AND store.listing.available_to >= NOW()
+GROUP BY 1, 2, 3
+HAVING store.listing.available_stock IS NULL
+OR store.listing.available_stock > SUM(store.purchase_listing.quantity);
+
 -- once a payment exists, a purchase cannot be modified
 CREATE FUNCTION store.do_not_modify_locked_purchase()
 RETURNS TRIGGER AS $$
@@ -232,12 +244,11 @@ CREATE TRIGGER store_purchase_listing_do_not_modify_locked_purchase
 CREATE FUNCTION store.allow_one_unpaid_purchase_per_client()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- if unpaid purchase exists
+    -- if unlocked purchase exists
     IF EXISTS (
         SELECT 1 FROM store.purchase
-        LEFT JOIN store.payment ON store.purchase.purchase_id = store.payment.purchase_id
         WHERE store.purchase.client_id = NEW.client_id
-        AND store.payment.payment_id = NULL
+        AND store.purhcase.locked = false
     ) THEN
         RAISE EXCEPTION 'Cannot create more than one unpaid purchase. Please update or delete any unpaid purchases';
     END IF;
@@ -257,10 +268,10 @@ BEGIN
     IF NEW.status != OLD.status THEN
         IF OLD.status = 'PENDING' AND NEW.status = 'COMPLETED' THEN
             -- 1 create invoices
-            INSERT INTO store.invoice (purchase_id, izi_actividad_economica)
+            INSERT INTO store.invoice (purchase_id, economic_activity_id)
             SELECT
                 store.payment.purchase_id AS purchase_id,
-                store.product.economic_activity_id AS izi_actividad_economica,
+                store.product.economic_activity_id AS economic_activity_id
             FROM store.payment
             LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.payment.purchase_id
             LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
@@ -303,7 +314,7 @@ BEGIN
             -- join on numbers list to get one record per listing product instance
             LEFT JOIN numbers_list AS product_numbers ON product_numbers.number <= store.listing_product.quantity
             WHERE store.payment.payment_id = OLD.payment_id;
-        ELSE IF OLD.status = 'PENDING' AND NEW.status IN ('REJECTED', 'EXPIRED', 'REVERSED') THEN
+        ELSIF OLD.status = 'PENDING' AND NEW.status IN ('REJECTED', 'EXPIRED', 'REVERSED') THEN
             -- do nothing
         ELSE
             RAISE EXCEPTION 'Cannot change payment status from % to %', OLD.status, NEW.status;
@@ -364,9 +375,8 @@ CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
     BEFORE INSERT ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
 
-
 INSERT INTO store.authentication_provider
-    (provider_name)
+    (name)
 VALUES
     ('google'),
     ('facebook');

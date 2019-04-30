@@ -15,6 +15,10 @@
     schema: store
   type: add_existing_table_or_view
 - args:
+    name: available_listing
+    schema: store
+  type: add_existing_table_or_view
+- args:
     name: listing_product
     schema: store
   type: add_existing_table_or_view

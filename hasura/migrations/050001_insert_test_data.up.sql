@@ -43,31 +43,35 @@ INSERT INTO calendar.lifetime_weekday (lifetime_id, weekday_id) VALUES
   (lifetime_1_id, 7); -- Domingo
 
 INSERT INTO store.product (
-  product_name,
+  public_name,
   description,
+  economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
   'Ingreso',
   'Ingreso Adulto',
+  71409,
   admin_user_id,
   admin_user_id
 ) RETURNING product_id INTO product_1_id;
 
 INSERT INTO store.product (
-  product_name,
+  public_name,
   description,
+  economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
   'Buffet',
   'Buffet Adulto',
+  72203,
   admin_user_id,
   admin_user_id
 ) RETURNING product_id INTO product_2_id;
 
 INSERT INTO store.listing (
-  listing_name,
+  public_name,
   description,
   available_from,
   available_to,
@@ -98,7 +102,7 @@ INSERT INTO store.listing_product (
 );
 
 INSERT INTO store.listing (
-  listing_name,
+  public_name,
   description,
   available_from,
   available_to,
