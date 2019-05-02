@@ -214,3 +214,54 @@
       name: payment
       schema: store
   type: drop_relationship
+
+- args:
+    relationship: available_listing_products
+    table:
+      name: available_listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: invoices
+    table:
+      name: economic_activity
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: products
+    table:
+      name: economic_activity
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: economic_activity
+    table:
+      name: invoice
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payments
+    table:
+      name: payment_status
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: economic_activity
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payments
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: available_listing
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship

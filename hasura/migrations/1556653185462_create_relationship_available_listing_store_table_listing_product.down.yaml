@@ -1,6 +1,0 @@
-- args:
-    relationship: available_listing
-    table:
-      name: listing_product
-      schema: store
-  type: drop_relationship

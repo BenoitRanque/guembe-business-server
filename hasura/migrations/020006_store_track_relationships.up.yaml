@@ -321,3 +321,96 @@
     using:
       foreign_key_constraint_on: status
   type: create_object_relationship
+
+- args:
+    name: available_listing_products
+    table:
+      name: available_listing
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          listing_id: listing_id
+        remote_table:
+          name: listing_product
+          schema: store
+  type: create_array_relationship
+
+- args:
+    name: invoices
+    table:
+      name: economic_activity
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: economic_activity_id
+        table:
+          name: invoice
+          schema: store
+  type: create_array_relationship
+- args:
+    name: products
+    table:
+      name: economic_activity
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: economic_activity_id
+        table:
+          name: product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: economic_activity
+    table:
+      name: invoice
+      schema: store
+    using:
+      foreign_key_constraint_on: economic_activity_id
+  type: create_object_relationship
+- args:
+    name: payments
+    table:
+      name: payment_status
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: status
+        table:
+          name: payment
+          schema: store
+  type: create_array_relationship
+- args:
+    name: economic_activity
+    table:
+      name: product
+      schema: store
+    using:
+      foreign_key_constraint_on: economic_activity_id
+  type: create_object_relationship
+- args:
+    name: payments
+    table:
+      name: purchase
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: purchase_id
+        table:
+          name: payment
+          schema: store
+  type: create_array_relationship
+
+- args:
+    name: available_listing
+    table:
+      name: listing_product
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          listing_id: listing_id
+        remote_table:
+          name: available_listing
+          schema: store
+  type: create_object_relationship
