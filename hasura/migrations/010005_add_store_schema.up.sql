@@ -69,7 +69,7 @@ CREATE TABLE store.listing_product (
     quantity INT NOT NULL CHECK (quantity > 0),
     price INT NOT NULL CHECK (price >= 0),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
-    PRIMARY KEY (listing_id, product_id)
+    PRIMARY KEY (listing_id, product_id, price)
 );
 
 CREATE TABLE store.purchase (
@@ -205,14 +205,16 @@ CREATE VIEW store.available_listing AS
 SELECT
     store.listing.listing_id,
     store.listing.public_name,
-    store.listing.description
+    store.listing.description,
+    store.listing.created_at,
+    store.listing.updated_at
 FROM store.listing
 LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
 LEFT JOIN store.purchase ON store.purchase_listing.purchase_id = store.purchase.purchase_id
 WHERE (store.purchase.purchase_id IS NULL OR store.purchase.locked = true)
     AND store.listing.available_from <= NOW()
     AND store.listing.available_to >= NOW()
-GROUP BY 1, 2, 3
+GROUP BY 1, 2, 3, 4, 5
 HAVING store.listing.available_stock IS NULL
 OR store.listing.available_stock > SUM(store.purchase_listing.quantity);
 
