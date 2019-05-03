@@ -1,5 +1,5 @@
 
-const { requireClientRole } = require('../../utils/khipu')
+const { requireClientRole } = require('../../utils/session')
 const updateLocalPayment = require('../../services/updateLocalPayment')
 const khipu = require('../../utils/khipu')
 
@@ -12,26 +12,30 @@ module.exports = async function storeCheckout ({ purchase_id, payment }, ctx) {
   let remotePayment = null
   let updatedLocalPayment = null
 
-  await validateCheckoutInput({ purchase_id, client_id, payment, invoice }, ctx.db)
+  await validateCheckoutInput({ purchase_id, client_id, payment }, ctx.db)
 
+  console.log('validated input')
   try {
     localPayment = await createLocalPayment({ purchase_id }, ctx.db)
   } catch (error) {
     console.error(error)
     throw error
   }
+  console.log('local payment created')
   try {
     remotePayment = await createRemotePayment({ localPayment, payment }, ctx.db)
   } catch (error) {
     console.error(error)
     throw error
   }
+  console.log('remote payment created')
   try {
-    updatedLocalPayment = await updateLocalPayment({ localPayment, remotePayment }, ctx.db)
+    updatedLocalPayment = await updateLocalPayment(localPayment.payment_id, remotePayment, ctx.db)
   } catch (error) {
     console.error(error)
     throw error
   }
+  console.log('local payment updated')
 
   return updatedLocalPayment
 }
@@ -46,7 +50,8 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
       WHERE store.purchase.purchase_id = $1
       AND store.purchase.client_id = $2
       AND store.purchase.locked = false
-      AND COUNT(store.listing_purchase.listing_id) > 0
+      GROUP BY store.purchase.purchase_id
+      HAVING COUNT(store.purchase_listing.listing_id) > 0
     );
   `, [ purchase_id, client_id ])
 
@@ -55,15 +60,15 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
   }
   // validate stock
   const { rows: stockAvailable } = await db.query(`
-    SELECT NOT EXISTS (SELECT 1
+    SELECT NOT EXISTS (
+      SELECT 1
       FROM store.purchase_listing
-        LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
-        LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
-        LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
-        LEFT JOIN store.payment ON store.payment.payment_id = store.payment.payment_id
+          LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
+          LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
+          LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
       WHERE store.listing.available_stock IS NOT NULL
-      AND (store.purchase_listing.purchase_id = $1 OR (store.purchase_id.locked = true AND NOT store.payment.cancelled = true))
-      GROUP BY store.store.purchase_listing.listing_id
+      AND (store.purchase_listing.purchase_id = $1 OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
+      GROUP BY store.purchase_listing.listing_id, store.listing.available_stock, store.purchase_listing.purchase_id
       HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
       AND store.purchase_listing.purchase_id = $1
     );
@@ -79,10 +84,10 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
 
 async function createLocalPayment ({ purchase_id }, db) {
   const { rows: [ localPayment ] } = await db.query(`
-    INSERT INTO store.payment (purchase_id)
-    VALUES ($1)
+    INSERT INTO store.payment (purchase_id, status)
+    VALUES ($1, $2)
     RETURNING payment_id, amount;
-  `, [ purchase_id ])
+  `, [ purchase_id, 'PENDING' ])
 
   return localPayment
 }
@@ -94,8 +99,7 @@ async function createRemotePayment ({
     payer_name,
     cancel_url,
     return_url
-  },
-  invoice
+  }
 }, db) {
   const paymentData = {
     transaction_id: payment_id,
@@ -109,11 +113,11 @@ async function createRemotePayment ({
     notify_url: `http${process.env.NODE_ENV === 'development' ? '' : 's'}://${process.env.PUBLIC_HOSTNAME}:3000/hooks/khipu/notify`,
     payer_name,
     payer_email,
-    custom: JSON.stringify({
-      invoice
-    })
+    custom: JSON.stringify({})
   }
+  console.log('creating remote payment')
   const remotePayment = await khipu.postPayments(paymentData)
+  console.log('created remote payment')
 
   return remotePayment
 }
@@ -125,41 +129,15 @@ async function getPaymentBody(payment_id, db) {
       store.listing_product.price AS price,
       SUM(store.purchase_listing.quantity * store.listing_product.quantity) AS quantity
     FROM store.payment
+    LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
     LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
     LEFT JOIN store.product ON store.listing_product.product_id = store.product.product_id
     WHERE store.payment.payment_id = $1
-    GROUP BY store.product_product_id, store.product.public_name, store.listing_product.price;
+    GROUP BY store.product.product_id, store.product.public_name, store.listing_product.price;
   `, [payment_id])
 
   return [
     `Articulo\tPrecio\tCantidad\tSubtotal`,
     ...details.map(({ product, quantity, price }) => `${product}\t${Number(price / 100).toFixed(2)}\t${quantity}\t${(price / 100) * quantity}`)
   ].join('\n')
-}
-
-async function getPurchaseInvoice (payment_id, { comprador, razonSocial }, db) {
-  const { rows: details } = await db.query(`
-    SELECT
-      store.product.public_name AS articulo,
-      store.listing_product.price AS precioUnitario,
-      store.product.economic_activity AS actividadEconomica,
-      SUM(store.purchase_listing.quantity * store.listing_product.quantity) AS cantidad
-    FROM store.invoice
-    LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.invoice.purchase_id
-    LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
-    INNER JOIN store.product ON store.listing_product.product_id = store.product.product_id
-      AND store.product.economic_activity_id = store.invoice.economic_activity_id
-    WHERE store.payment.payment_id = $1
-    GROUP BY store.product_product_id, store.product.public_name, store.product.economic_activity_id, store.listing_product.price;
-  `, [payment_id])
-
-  const invoices = {}
-
-  return {
-    emisor: process.env.IZI_NIT_EMISOR,
-    comprador, // add buyer nit here
-    razonSocial, // add buyer name here
-    actividadEconomica: details[0].actividadEconomica,
-    listaItems: details.map(({ articulo, precioUnitario, cantidad }) => ({ articulo, precioUnitario, cantidad }))
-  }
 }

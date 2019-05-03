@@ -1,6 +1,7 @@
 module.exports = async function (payment_id, update, db) {
   // check if all update properties are valid fields
-  if (Object.keys(update).some(column => ![
+  console.log(update)
+  const allowedUpdateColumns = [
     'payment_id',
     'payment_url',
     'simplified_transfer_url',
@@ -38,10 +39,9 @@ module.exports = async function (payment_id, update, db) {
     'send_reminders',
     'send_email',
     'payment_method'
-  ].includes(column))) {
-    throw new Error(`Unexpected column name for payment update: \n ${JSON.stringify(update)} \n Possibly due to a khipu api update?`)
-  }
-  let status = null
+  ]
+  // TODO: do not updated status if not required
+  let status = 'PENDING'
 
   switch (update.status_detail) {
     case 'pending':
@@ -62,8 +62,8 @@ module.exports = async function (payment_id, update, db) {
     case 'reversed':
       status = 'REVERSED'
       break
-    default:
-      throw new Error(`Unknown khipu_status_detail ${update.status_detail}`)
+    // default:
+    //   throw new Error(`Unknown khipu_status_detail ${update.status_detail}`)
   }
 
   // if expired for more than 10 minutes, set expired
@@ -76,7 +76,7 @@ module.exports = async function (payment_id, update, db) {
   let returnFields = ''
 
   Object.keys(update).forEach((column, index) => {
-    if (update[column] !== null) {
+    if (allowedUpdateColumns.includes(column) && update[column] !== null) {
       updateFields += `, khipu_${column} = $${index + 3}`
       updateValues.push(update[column])
       returnFields += `, khipu_${column}`

@@ -2,7 +2,7 @@ const { buildSchema } = require('graphql')
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(/* GraphQL */`
-  scalar UUID
+  scalar uuid
 
   type UserCrededentials {
     token: String!
@@ -10,7 +10,7 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type UserAccount {
-    user_id: UUID!
+    user_id: uuid!
     username: String!
     roles: [String!]!
   }
@@ -21,7 +21,7 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type ClientAccount {
-    client_id: UUID!
+    client_id: uuid!
     name: String
     email: String
   }
@@ -34,7 +34,7 @@ const schema = buildSchema(/* GraphQL */`
   scalar JSON
 
   type StoreCheckoutPayload {
-    payment_id: UUID!
+    payment_id: uuid!
     khipu_payment_url: String!
     khipu_simplified_transfer_url: String!
     khipu_transfer_url: String!
@@ -50,11 +50,6 @@ const schema = buildSchema(/* GraphQL */`
     cancel_url: String!
   }
 
-  input StoreCheckoutInput {
-    purchase_id: UUID!
-    payment: StoreCheckoutPaymentInput!
-  }
-
   type Query {
     test: JSON
     store_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
@@ -62,7 +57,7 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type Mutation {
-    store_checkout (input: StoreCheckoutInput!): StoreCheckoutPayload!
+    store_checkout (purchase_id: uuid! payment: StoreCheckoutPaymentInput!): StoreCheckoutPayload!
   }
 `)
 

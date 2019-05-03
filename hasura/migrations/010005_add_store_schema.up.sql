@@ -205,18 +205,15 @@ CREATE VIEW store.available_listing AS
 SELECT
     store.listing.listing_id,
     store.listing.public_name,
-    store.listing.description,
-    store.listing.created_at,
-    store.listing.updated_at
+    store.listing.description
 FROM store.listing
 LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
-LEFT JOIN store.purchase ON store.purchase_listing.purchase_id = store.purchase.purchase_id
-WHERE (store.purchase.purchase_id IS NULL OR store.purchase.locked = true)
-    AND store.listing.available_from <= NOW()
-    AND store.listing.available_to >= NOW()
-GROUP BY 1, 2, 3, 4, 5
+LEFT JOIN store.purchase ON store.purchase_listing.purchase_id = store.purchase.purchase_id AND store.purchase.locked = true
+WHERE store.listing.available_from <= NOW() AND store.listing.available_to >= NOW()
+GROUP BY 1, 2, 3, store.listing.available_stock
 HAVING store.listing.available_stock IS NULL
-OR store.listing.available_stock > SUM(store.purchase_listing.quantity);
+OR store.listing.available_stock > SUM(store.purchase_listing.quantity)
+ORDER BY store.listing.created_at DESC;
 
 -- once a payment exists, a purchase cannot be modified
 CREATE FUNCTION store.do_not_modify_locked_purchase()
@@ -250,7 +247,7 @@ BEGIN
     IF EXISTS (
         SELECT 1 FROM store.purchase
         WHERE store.purchase.client_id = NEW.client_id
-        AND store.purhcase.locked = false
+        AND store.purchase.locked = false
     ) THEN
         RAISE EXCEPTION 'Cannot create more than one unpaid purchase. Please update or delete any unpaid purchases';
     END IF;
@@ -347,7 +344,7 @@ BEGIN
             LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
         WHERE store.listing.available_stock IS NOT NULL
         AND (store.purchase_listing.purchase_id = NEW.purchase_id OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
-        GROUP BY store.store.purchase_listing.listing_id
+        GROUP BY store.purchase_listing.listing_id, store.listing.available_stock, store.purchase_listing.purchase_id
         HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
         AND store.purchase_listing.purchase_id = NEW.purchase_id
     ) THEN

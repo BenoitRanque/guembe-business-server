@@ -65,7 +65,7 @@ function requireRoleMiddleware (roles) {
 }
 
 function requireClientRole(session) {
-  if (!session || !session['x-hasura-allowed-roles'].includes('client')) {
+  if (!session || !session['x-hasura'] || !session['x-hasura']['x-hasura-allowed-roles'].includes('client')) {
     throw new Error(`Access Denied: client role is required`)
   }
   return true
