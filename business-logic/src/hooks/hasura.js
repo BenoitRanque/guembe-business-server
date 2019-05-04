@@ -1,26 +1,27 @@
 const express = require('express')
 const app = express()
+const izi = require('../utils/izi')
 
 app.use(function (req, res, next) {
   // this is a security vulnerability. Make sure to authorize
   // probably good idea to check for secret in header
-  console.log(`hasura hook called from ${req.headers.origin}`)
   const authorization = req.get('Authorization')
   console.log('Authorization header value:', authorization)
+  console.log(`TODO: implment hasura hook safety, to avoid invocation from external sources`)
   next()
 })
 
 app.post('/store/invoice/insert', express.json(), async function (req, res) {
   // create invoice remotely, update locally
 
-  const {  } = req.body
+  const { invoice_id } = req.body.event.data.new
 
   let remoteInvoice = null
   let localInvoice = null
 
   try {
     const remoteInvoice = await createRemoteInvoice(invoice_id, req.db)
-    const localInvoice = await updateLocalInvoice(invoice_id, remoteInvoice)
+    const localInvoice = await updateLocalInvoice(invoice_id, remoteInvoice, req.db)
   } catch (error) {
     res.status(500).end()
     console.error(error)
@@ -51,39 +52,82 @@ async function invoiceAlreadyEmited (invoice_id, db) {
     FROM store.invoice
     WHERE store.invoice.invoice_id = $1
     AND store.invoice.izi_id IS NOT NULL
-  `, [ invoice_id ])
+    `, [ invoice_id ])
 
   return rows.length > 0
 }
 
 async function getInvoiceInformation (invoice_id, db) {
+  // note the double quotation marks "" around the column names, to preserve upper/lowercase
   const { rows: [ information ] } = await db.query(`
     SELECT
-      store.invoice.economic_activity_id AS actividadEconomica,
-      store.purchase.buyer_business_name AS razonSocial,
-      store.purchase.buyer_tax_identification_number AS comprador
+      store.invoice.economic_activity_id AS "actividadEconomica",
+      store.purchase.buyer_business_name AS "razonSocial",
+      store.purchase.buyer_tax_identification_number AS "comprador"
     FROM store.invoice
     LEFT JOIN store.purchase ON store.purchase.purchase_id = store.invoice.purchase_id
     WHERE store.invoice.invoice_id = $1
   `, [ invoice_id ])
+
+  return information
 }
 
 async function getInvoiceItems (invoice_id, db) {
+  // note the double quotation marks "" around the column names, to preserve upper/lowercase
   const { rows: items } = await db.query(`
     SELECT
-      store.product.public_name AS articulo,
-      store.listing_product.price AS precioUnitario,
-      SUM(store.purchase_listing.quantity * store.listing_product.quantity) AS cantidad
+      store.product.public_name AS "articulo",
+      store.listing_product.price AS "precioUnitario",
+      SUM(store.purchase_listing.quantity * store.listing_product.quantity) AS "cantidad"
     FROM store.invoice
     LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.invoice.purchase_id
     LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
     INNER JOIN store.product ON store.listing_product.product_id = store.product.product_id
       AND store.product.economic_activity_id = store.invoice.economic_activity_id
     WHERE store.invoice.invoice_id = $1
-    GROUP BY store.product_product_id, store.product.public_name, store.listing_product.price;
+    GROUP BY store.product.product_id, store.product.public_name, store.listing_product.price;
   `, [ invoice_id ])
 
-  return items
+  return items.map(({ articulo, precioUnitario, cantidad }) => ({
+    articulo,
+    cantidad: Number(cantidad),
+    precioUnitario: precioUnitario / 100
+  }))
+}
+
+async function updateLocalInvoice (invoice_id, update, db) {
+  // check if all update properties are valid fields
+  const allowedUpdateColumns = [
+    'id',
+    'timestamp',
+    'link'
+  ]
+
+  let updateFields = []
+  let updateValues = []
+
+  Object.keys(update).forEach(column => {
+    if (allowedUpdateColumns.includes(column) && update[column] !== null) {
+      updateFields.push(`izi_${column}`)
+      updateValues.push(update[column])
+    }
+  })
+
+  if (updateFields.length === 0) {
+    throw new Error(`Atempted to update local invoice with no update columns specified`)
+  }
+
+  const { rows: [ updatedInvoice ] } = await db.query(`
+    UPDATE store.invoice
+    SET ${updateFields.map((column, index) => `${column} = $${index + 2}`).join(', ')}
+    WHERE store.invoice.invoice_id = $1
+    RETURNING invoice_id, ${updateFields.join(', ')};
+  `, [
+    invoice_id,
+    ...updateValues
+  ])
+
+  return updatedInvoice
 }
 
 module.exports = app

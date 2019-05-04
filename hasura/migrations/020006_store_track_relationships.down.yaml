@@ -252,12 +252,6 @@
       name: product
       schema: store
   type: drop_relationship
-- args:
-    relationship: payments
-    table:
-      name: purchase
-      schema: store
-  type: drop_relationship
 
 - args:
     relationship: available_listing

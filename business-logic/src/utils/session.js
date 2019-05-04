@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 function sessionMiddleware (req, res, next) {
   // get session from header
   const Authorization = req.get('Authorization')
-  if (Authorization) {
+  if (Authorization && Authorization.match(/^Bearer /)) {
     const token = Authorization.replace('Bearer ', '')
     const session = jwt.verify(token, process.env.AUTH_JWT_SECRET)
     req.session = session

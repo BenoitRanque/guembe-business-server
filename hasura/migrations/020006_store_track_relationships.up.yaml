@@ -388,18 +388,6 @@
     using:
       foreign_key_constraint_on: economic_activity_id
   type: create_object_relationship
-- args:
-    name: payments
-    table:
-      name: purchase
-      schema: store
-    using:
-      foreign_key_constraint_on:
-        column: purchase_id
-        table:
-          name: payment
-          schema: store
-  type: create_array_relationship
 
 - args:
     name: available_listing

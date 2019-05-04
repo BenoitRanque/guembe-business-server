@@ -1,6 +1,5 @@
 module.exports = async function (payment_id, update, db) {
   // check if all update properties are valid fields
-  console.log(update)
   const allowedUpdateColumns = [
     'payment_id',
     'payment_url',
@@ -41,29 +40,31 @@ module.exports = async function (payment_id, update, db) {
     'payment_method'
   ]
   // TODO: do not updated status if not required
-  let status = 'PENDING'
+  let status = null
 
-  switch (update.status_detail) {
-    case 'pending':
-      status = 'PENDING'
-      break
-    case 'normal':
-      status = 'COMPLETED'
-      break
-    case 'marked-paid-by-receiver':
-      status = 'COMPLETED'
-      break
-    case 'rejected-by-payer':
-      status = 'REJECTED'
-      break
-    case 'marked-as-abuse':
-      status = 'REJECTED'
-      break
-    case 'reversed':
-      status = 'REVERSED'
-      break
-    // default:
-    //   throw new Error(`Unknown khipu_status_detail ${update.status_detail}`)
+  if (update.status_detail) {
+    switch (update.status_detail) {
+      case 'pending':
+        status = 'PENDING'
+        break
+      case 'normal':
+        status = 'COMPLETED'
+        break
+      case 'marked-paid-by-receiver':
+        status = 'COMPLETED'
+        break
+      case 'rejected-by-payer':
+        status = 'REJECTED'
+        break
+      case 'marked-as-abuse':
+        status = 'REJECTED'
+        break
+      case 'reversed':
+        status = 'REVERSED'
+        break
+      default:
+        throw new Error(`Unknown khipu_status_detail ${update.status_detail}`)
+    }
   }
 
   // if expired for more than 10 minutes, set expired
@@ -71,26 +72,32 @@ module.exports = async function (payment_id, update, db) {
   //   status = 'EXPIRED'
   // }
 
-  let updateFields = ''
+  let updateFields = []
   let updateValues = []
-  let returnFields = ''
 
-  Object.keys(update).forEach((column, index) => {
+  if (status !== null) {
+    updateFields.push(`status`)
+    updateValues.push(status)
+  }
+
+  Object.keys(update).forEach(column => {
     if (allowedUpdateColumns.includes(column) && update[column] !== null) {
-      updateFields += `, khipu_${column} = $${index + 3}`
+      updateFields.push(`khipu_${column}`)
       updateValues.push(update[column])
-      returnFields += `, khipu_${column}`
     }
   })
 
+  if (updateFields.length === 0) {
+    throw new Error(`Atempted to update local payment with no update columns specified`)
+  }
+
   const { rows: [ updatedPayment ] } = await db.query(`
     UPDATE store.payment
-    SET status = $2${updateFields}
+    SET ${updateFields.map((column, index) => `${column} = $${index + 2}`).join(', ')}
     WHERE store.payment.payment_id = $1
-    RETURNING payment_id, purchase_id, amount, status${returnFields};
+    RETURNING payment_id, purchase_id, amount, ${updateFields.join(', ')};
   `, [
     payment_id,
-    status,
     ...updateValues
   ])
 

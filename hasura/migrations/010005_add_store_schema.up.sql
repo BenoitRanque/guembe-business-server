@@ -109,7 +109,7 @@ CREATE TABLE store.payment (
     purchase_id UUID UNIQUE NOT NULL REFERENCES store.purchase (purchase_id)
         ON DELETE CASCADE,
     amount INTEGER NOT NULL,
-    status TEXT NOT NULL REFERENCES store.payment_status (name),
+    status TEXT NOT NULL REFERENCES store.payment_status (name) DEFAULT 'PENDING',
     -- khipu payment data goes here
     khipu_payment_id TEXT, -- (String) Identificador único del pago, es una cadena alfanumérica de 12 caracteres
     khipu_payment_url TEXT, -- (String) URL principal del pago, si el usuario no ha elegido previamente un método de pago se le muestran las opciones
@@ -143,7 +143,7 @@ CREATE TABLE store.payment (
     khipu_bank_account_number TEXT, -- (String) Número de cuenta bancaria del pagador
     khipu_out_of_date_conciliation BOOLEAN, -- (Boolean) Es 'true' si la conciliación del pago fue hecha luego de la fecha de expiración
     khipu_transaction_id TEXT, -- (String) Identificador del pago asignado por el cobrador
-    khipu_custom JSON, -- (String) Campo genérico que asigna el cobrador al momento de hacer el pago
+    khipu_custom JSONB, -- (String) Campo genérico que asigna el cobrador al momento de hacer el pago
     khipu_responsible_user_email TEXT, -- (String) Correo electrónico de la persona responsable del pago
     khipu_send_reminders BOOLEAN, -- (Boolean) Es 'true' cuando este es un cobro por correo electrónico y khipu enviará recordatorios
     khipu_send_email BOOLEAN, -- (Boolean) Es 'true' cuando khipu enviará el cobro por correo electrónico
@@ -221,12 +221,17 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS(
         SELECT 1 FROM store.purchase
-        WHERE locked = true
+        WHERE store.purchase.locked = true
         AND purchase_id = OLD.purchase_id
     ) THEN
         RAISE EXCEPTION 'Modifying a locked purchase is not allowed';
+    ELSE
+        IF TG_OP = 'DELETE' THEN
+            RETURN OLD;
+        ELSE
+            RETURN NEW;
+        END IF;
     END IF;
-    RETURN NEW;
 END;
 $$ language 'plpgsql';
 
@@ -276,7 +281,7 @@ BEGIN
             LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
             LEFT JOIN store.product ON store.listing_product.product_id = store.product.product_id
             WHERE store.payment.payment_id = OLD.payment_id
-            GROUP BY store.product.economic_activity_id;
+            GROUP BY store.product.economic_activity_id, store.payment.purchase_id;
 
             -- 2 create purchased products
 

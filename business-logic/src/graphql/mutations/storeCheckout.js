@@ -6,7 +6,7 @@ const khipu = require('../../utils/khipu')
 module.exports = async function storeCheckout ({ purchase_id, payment }, ctx) {
   // verify auth
   requireClientRole(ctx.session)
-  const client_id = ctx.session['x-hasura-client-id']
+  const client_id = ctx.session['x-hasura']['x-hasura-client-id']
 
   let localPayment = null
   let remotePayment = null
@@ -42,7 +42,7 @@ module.exports = async function storeCheckout ({ purchase_id, payment }, ctx) {
 
 async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
   // validate ownership, and purchase not already locked
-  const { rows: [ isOwnerAndPurchaseNotLocked ] } = await db.query(`
+  const { rows: [ { exists: isOwnerAndPurchaseNotLocked }] } = await db.query(`
     SELECT EXISTS (
       SELECT 1
       FROM store.purchase
@@ -59,23 +59,22 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
     throw new Error(`Compra no existente, bloqueada, o invalida`)
   }
   // validate stock
-  const { rows: stockAvailable } = await db.query(`
-    SELECT NOT EXISTS (
-      SELECT 1
-      FROM store.purchase_listing
-          LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
-          LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
-          LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
-      WHERE store.listing.available_stock IS NOT NULL
-      AND (store.purchase_listing.purchase_id = $1 OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
-      GROUP BY store.purchase_listing.listing_id, store.listing.available_stock, store.purchase_listing.purchase_id
-      HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
-      AND store.purchase_listing.purchase_id = $1
-    );
+
+  const { rows: listingsWithoutStock } = await db.query(`
+    SELECT store.listing.public_name AS public_name
+    FROM store.purchase_listing
+        LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
+        LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
+        LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
+    WHERE store.listing.available_stock IS NOT NULL
+    AND (store.purchase_listing.purchase_id = $1 OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
+    GROUP BY store.purchase_listing.listing_id, store.listing.public_name, store.listing.available_stock, store.purchase_listing.purchase_id
+    HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
+    AND store.purchase_listing.purchase_id = $1;
   `, [ purchase_id ])
 
-  if (!stockAvailable) {
-    throw new Error(`Error de stock`)
+  if (listingsWithoutStock.length) {
+    throw new Error(`Error de stock en ${listingsWithoutStock.map(({ public_name }) => public_name).join(', ')}`)
   }
 
   return true
@@ -84,10 +83,10 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
 
 async function createLocalPayment ({ purchase_id }, db) {
   const { rows: [ localPayment ] } = await db.query(`
-    INSERT INTO store.payment (purchase_id, status)
-    VALUES ($1, $2)
+    INSERT INTO store.payment (purchase_id)
+    VALUES ($1)
     RETURNING payment_id, amount;
-  `, [ purchase_id, 'PENDING' ])
+  `, [ purchase_id ])
 
   return localPayment
 }
