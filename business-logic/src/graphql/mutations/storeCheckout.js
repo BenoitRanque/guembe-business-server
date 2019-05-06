@@ -14,28 +14,31 @@ module.exports = async function storeCheckout ({ purchase_id, payment }, ctx) {
 
   await validateCheckoutInput({ purchase_id, client_id, payment }, ctx.db)
 
-  console.log('validated input')
   try {
     localPayment = await createLocalPayment({ purchase_id }, ctx.db)
   } catch (error) {
     console.error(error)
     throw error
   }
-  console.log('local payment created')
+
   try {
     remotePayment = await createRemotePayment({ localPayment, payment }, ctx.db)
   } catch (error) {
     console.error(error)
-    throw error
+    try {
+      await ctx.db.query(`DELETE FROM store.payment WHERE store.payment.payment_id = $1;`, [ localPayment.payment_id ])
+    } catch (error) {
+      console.error(error)
+    }
+    throw new Error(`Error creando el pago remotamente. Por favor intentar de nuevo mas tarde`)
   }
-  console.log('remote payment created')
+
   try {
     updatedLocalPayment = await updateLocalPayment(localPayment.payment_id, remotePayment, ctx.db)
   } catch (error) {
     console.error(error)
     throw error
   }
-  console.log('local payment updated')
 
   return updatedLocalPayment
 }
@@ -110,6 +113,7 @@ async function createRemotePayment ({
     cancel_url,
     return_url,
     notify_url: `http${process.env.NODE_ENV === 'development' ? '' : 's'}://${process.env.PUBLIC_HOSTNAME}:3000/hooks/khipu/notify`,
+    picture_url: `http${process.env.NODE_ENV === 'development' ? '' : 's'}://${process.env.PUBLIC_HOSTNAME}:80/icons/isologo.png`,
     payer_name,
     payer_email,
     custom: JSON.stringify({})

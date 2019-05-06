@@ -355,6 +355,16 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Cannot lock current sale, insufficient stock';
     END IF;
+
+    IF EXISTS(
+        SELECT 1
+        FROM store.purchase_listing
+        WHERE store.purchase_listing.purchase_id = NEW.purchase_id
+        AND store.purchase_listing.listing_id NOT IN (SELECT store.available_listing.listing_id FROM store.available_listing)
+    ) THEN
+        RAISE EXCEPTION 'Cannot lock current purchase, some listings no longer available. Remove and try again';
+    END IF;
+
     -- lock purchase
     UPDATE store.purchase
     SET locked = true
@@ -371,6 +381,10 @@ BEGIN
     LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
     WHERE store.purchase_listing.purchase_id = NEW.purchase_id;
 
+    IF NEW.amount = 0 THEN
+        RAISE EXCEPTION 'Cannot create payment for 0';
+    END IF;
+
     RETURN NEW;
 END;
 $$ language 'plpgsql';
@@ -378,6 +392,19 @@ $$ language 'plpgsql';
 CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
     BEFORE INSERT ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
+
+CREATE FUNCTION store.unlock_purchase_on_payment_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE store.purchase
+    SET locked = false
+    WHERE purchase_id = OLD.purchase_id;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER store_unlock_purchase_on_payment_deletion
+    AFTER DELETE ON store.payment
+    FOR EACH ROW EXECUTE FUNCTION store.unlock_purchase_on_payment_deletion();
 
 INSERT INTO store.authentication_provider
     (name)

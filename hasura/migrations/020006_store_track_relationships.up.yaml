@@ -323,20 +323,6 @@
   type: create_object_relationship
 
 - args:
-    name: available_listing_products
-    table:
-      name: available_listing
-      schema: store
-    using:
-      manual_configuration:
-        column_mapping:
-          listing_id: listing_id
-        remote_table:
-          name: listing_product
-          schema: store
-  type: create_array_relationship
-
-- args:
     name: invoices
     table:
       name: economic_activity
@@ -392,7 +378,7 @@
 - args:
     name: available_listing
     table:
-      name: listing_product
+      name: listing
       schema: store
     using:
       manual_configuration:
@@ -400,5 +386,18 @@
           listing_id: listing_id
         remote_table:
           name: available_listing
+          schema: store
+  type: create_object_relationship
+- args:
+    name: listing
+    table:
+      name: available_listing
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          listing_id: listing_id
+        remote_table:
+          name: listing
           schema: store
   type: create_object_relationship

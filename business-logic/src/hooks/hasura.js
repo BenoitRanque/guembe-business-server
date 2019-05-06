@@ -14,14 +14,18 @@ app.use(function (req, res, next) {
 app.post('/store/invoice/insert', express.json(), async function (req, res) {
   // create invoice remotely, update locally
 
-  const { invoice_id } = req.body.event.data.new
+  const invoice = req.body.event.data.new
 
   let remoteInvoice = null
   let localInvoice = null
 
   try {
-    const remoteInvoice = await createRemoteInvoice(invoice_id, req.db)
-    const localInvoice = await updateLocalInvoice(invoice_id, remoteInvoice, req.db)
+    const alreadyEmited = await invoiceAlreadyEmited(invoice.invoice_id)
+    if (alreadyEmited) {
+      throw new Error(`Invoice ${invoice.invoice_id} already emitted: ${JSON.stringify(invoice)}`)
+    }
+    const remoteInvoice = await createRemoteInvoice(invoice.invoice_id, req.db)
+    const localInvoice = await updateLocalInvoice(invoice.invoice_id, remoteInvoice, req.db)
   } catch (error) {
     res.status(500).end()
     console.error(error)

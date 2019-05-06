@@ -216,13 +216,6 @@
   type: drop_relationship
 
 - args:
-    relationship: available_listing_products
-    table:
-      name: available_listing
-      schema: store
-  type: drop_relationship
-
-- args:
     relationship: invoices
     table:
       name: economic_activity
@@ -256,6 +249,13 @@
 - args:
     relationship: available_listing
     table:
-      name: listing_product
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing
+    table:
+      name: available_listing
       schema: store
   type: drop_relationship
