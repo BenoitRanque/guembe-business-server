@@ -50,6 +50,7 @@ CREATE TABLE store.listing (
     private_name TEXT,
     available_from DATE NOT NULL, -- when this will be available in store
     available_to DATE NOT NULL,
+    CHECK (available_from <= available_to),
     -- TODO: add trigger to validate stock
     -- might validate stock in payment creation (race condition?)
     -- validate stock in trigger before payment creation. Throw error on failure.
@@ -69,13 +70,25 @@ CREATE TABLE store.listing_product (
     quantity INT NOT NULL CHECK (quantity > 0),
     price INT NOT NULL CHECK (price >= 0),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
-    PRIMARY KEY (listing_id, product_id, price)
+    PRIMARY KEY (listing_id, product_id, price, lifetime_id)
 );
+
+CREATE TABLE store.cart_listing (
+    client_id UUID NOT NULL REFERENCES store.client (client_id)
+        ON DELETE CASCADE,
+    listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
+    quantity INT NOT NULL CHECK (quantity > 0),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    PRIMARY KEY (client_id, listing_id)
+);
+CREATE TRIGGER store_cart_listing_set_updated_at BEFORE UPDATE ON store.cart_listing
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.purchase (
     purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL REFERENCES store.client (client_id),
-    locked BOOLEAN NOT NULL DEFAULT false,
+    -- locked BOOLEAN NOT NULL DEFAULT false,
     buyer_business_name TEXT,
     buyer_tax_identification_number TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -201,68 +214,73 @@ CREATE TABLE store.purchased_product_usage (
 CREATE TRIGGER store_purchased_product_usage_set_updated_at BEFORE UPDATE ON store.purchased_product_usage
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE VIEW store.listing_stock AS
+SELECT
+    store.listing.listing_id AS listing_id,
+    store.listing.available_stock AS available_stock,
+    SUM(store.purchase_listing.quantity) AS used_stock,
+    available_stock - SUM(store.purchase_listing.quantity) AS remaining_stock
+FROM store.listing
+LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
+    AND store.purchase_listing.purchase_id NOT IN
+        (SELECT store.payment.purchase_id FROM store.payment WHERE store.payment.status NOT IN ('PENDING', 'COMPLETE'))
+WHERE store.listing.available_stock IS NOT NULL
+GROUP BY store.listing.listing_id, store.listing.available_stock;
+
 CREATE VIEW store.available_listing AS
 SELECT
     store.listing.listing_id,
     store.listing.public_name,
     store.listing.description
 FROM store.listing
-LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
-LEFT JOIN store.purchase ON store.purchase_listing.purchase_id = store.purchase.purchase_id AND store.purchase.locked = true
 WHERE store.listing.available_from <= NOW() AND store.listing.available_to >= NOW()
-GROUP BY 1, 2, 3, store.listing.available_stock
-HAVING store.listing.available_stock IS NULL
-OR store.listing.available_stock > SUM(store.purchase_listing.quantity)
+AND (store.listing.available_stock IS NULL
+    OR store.listing.listing_id IN (SELECT store.listing_stock.listing_id FROM store.listing_stock WHERE store.listing_stock.remaining_stock > 0))
 ORDER BY store.listing.created_at DESC;
 
--- once a payment exists, a purchase cannot be modified
-CREATE FUNCTION store.do_not_modify_locked_purchase()
+-- once a purchase exists, a listing cannot be modified cannot be modified
+CREATE FUNCTION store.protect_purchased_listing()
 RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS(
-        SELECT 1 FROM store.purchase
-        WHERE store.purchase.locked = true
-        AND purchase_id = OLD.purchase_id
+        SELECT 1 FROM store.purchase_listing
+        WHERE store.purchase_listing.listing_id = COALESCE(NEW.listing_id, OLD.listing_id)
     ) THEN
-        RAISE EXCEPTION 'Modifying a locked purchase is not allowed';
-    ELSE
-        IF TG_OP = 'DELETE' THEN
-            RETURN OLD;
-        ELSE
-            RETURN NEW;
-        END IF;
+        RAISE EXCEPTION 'Modifying a listing already in a purchase is not allowed';
     END IF;
+    RETURN COALESCE(NEW, OLD);
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_purchase_do_not_modify_locked_purchase
-    BEFORE DELETE ON store.purchase
-    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_locked_purchase();
+CREATE TRIGGER store_listing_protect_purchased_listing
+    BEFORE UPDATE OR DELETE ON store.listing
+    FOR EACH ROW EXECUTE FUNCTION store.protect_purchased_listing();
 
-CREATE TRIGGER store_purchase_listing_do_not_modify_locked_purchase
-    BEFORE UPDATE OR DELETE ON store.purchase_listing
-    FOR EACH ROW EXECUTE FUNCTION store.do_not_modify_locked_purchase();
+CREATE TRIGGER store_listing_product_protect_purchased_listing
+    BEFORE INSERT OR UPDATE OR DELETE ON store.listing_product
+    FOR EACH ROW EXECUTE FUNCTION store.protect_purchased_listing();
 
--- Each client can only have a single purchase without payment. Do not allow insert of another
--- note unpaid means payment not created, no nescesarily completed.
-CREATE FUNCTION store.allow_one_unpaid_purchase_per_client()
+-- once a payment exists, a purchase cannot be modified
+CREATE FUNCTION store.protect_paid_purchase()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- if unlocked purchase exists
-    IF EXISTS (
-        SELECT 1 FROM store.purchase
-        WHERE store.purchase.client_id = NEW.client_id
-        AND store.purchase.locked = false
+    IF EXISTS(
+        SELECT 1 FROM store.payment
+        WHERE store.payment.purchase_id = COALESCE(NEW.purchase_id, OLD.purchase_id)
     ) THEN
-        RAISE EXCEPTION 'Cannot create more than one unpaid purchase. Please update or delete any unpaid purchases';
+        RAISE EXCEPTION 'Modifying a paid purchase is not allowed';
     END IF;
-    RETURN NEW;
+    RETURN COALESCE(NEW, OLD);
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_purchase_allow_one_unpaid_purchase_per_client
-    BEFORE INSERT ON store.purchase
-    FOR EACH ROW EXECUTE FUNCTION store.allow_one_unpaid_purchase_per_client();
+CREATE TRIGGER store_purchase_protect_paid_purchase
+    BEFORE UPDATE OR DELETE ON store.purchase
+    FOR EACH ROW EXECUTE FUNCTION store.protect_paid_purchase();
+
+CREATE TRIGGER store_purchase_listing_protect_paid_purchase
+    BEFORE INSERT OR UPDATE OR DELETE ON store.purchase_listing
+    FOR EACH ROW EXECUTE FUNCTION store.protect_paid_purchase();
 
 -- created purchased products if payment confirmation is properly received
 
@@ -332,43 +350,9 @@ CREATE TRIGGER store_payment_create_purchased_products
     BEFORE UPDATE ON store.payment
     FOR EACH ROW EXECUTE FUNCTION store.create_purchased_products();
 
-CREATE FUNCTION store.validate_and_lock_purchase_before_payment()
+CREATE FUNCTION store.calculate_payment_amount()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- validate available stock
-    -- we select purchasse listings where:
-        -- listing avaialable stock is not null (meaning there is a limit)
-        -- the purchase listing belongs to the current purchase or
-        -- locked purchases where the payment is not cancelled (but not nescesarily present, payment may be pending)
-    -- we aggregate those by listing id, and check if the sum of the quantities is more than the available stock
-    IF EXISTS(
-        SELECT 1
-        FROM store.purchase_listing
-            LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
-            LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
-            LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
-        WHERE store.listing.available_stock IS NOT NULL
-        AND (store.purchase_listing.purchase_id = NEW.purchase_id OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
-        GROUP BY store.purchase_listing.listing_id, store.listing.available_stock, store.purchase_listing.purchase_id
-        HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
-        AND store.purchase_listing.purchase_id = NEW.purchase_id
-    ) THEN
-        RAISE EXCEPTION 'Cannot lock current sale, insufficient stock';
-    END IF;
-
-    IF EXISTS(
-        SELECT 1
-        FROM store.purchase_listing
-        WHERE store.purchase_listing.purchase_id = NEW.purchase_id
-        AND store.purchase_listing.listing_id NOT IN (SELECT store.available_listing.listing_id FROM store.available_listing)
-    ) THEN
-        RAISE EXCEPTION 'Cannot lock current purchase, some listings no longer available. Remove and try again';
-    END IF;
-
-    -- lock purchase
-    UPDATE store.purchase
-    SET locked = true
-    WHERE purchase_id = NEW.purchase_id;
     -- calculate amount to pay
     -- TODO: verify how many rows this query returns. I have doubts
     SELECT store.purchase_listing.quantity
@@ -389,22 +373,33 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_payment_validate_and_lock_purchase_before_payment
+CREATE TRIGGER store_payment_calculate_payment_amount
     BEFORE INSERT ON store.payment
-    FOR EACH ROW EXECUTE FUNCTION store.validate_and_lock_purchase_before_payment();
+    FOR EACH ROW EXECUTE FUNCTION store.calculate_payment_amount();
 
-CREATE FUNCTION store.unlock_purchase_on_payment_deletion()
+CREATE FUNCTION store.purchase_listing_verify_stock_and_availability()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE store.purchase
-    SET locked = false
-    WHERE purchase_id = OLD.purchase_id;
+    IF EXISTS (
+        SELECT 1 FROM store.listing_stock
+        WHERE store.listing_stock.listing_id = NEW.listing_id
+        AND store.listing_stock.remaining_stock < NEW.quantity
+    )
+    THEN
+        RAISE EXCEPTION 'Insuficient remaining stock for listing %', NEW.listing_id;
+    END IF;
+    IF NEW.listing_id NOT IN (SELECT listing_id FROM store.available_listing)
+    THEN
+        RAISE EXCEPTION 'Listing no longer available %', NEW.listing_id;
+    END IF;
+    RETURN NEW;
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER store_unlock_purchase_on_payment_deletion
-    AFTER DELETE ON store.payment
-    FOR EACH ROW EXECUTE FUNCTION store.unlock_purchase_on_payment_deletion();
+CREATE TRIGGER store_purchase_listing_verify_stock_and_availability
+    BEFORE INSERT OR UPDATE ON store.purchase_listing
+    FOR EACH ROW EXECUTE FUNCTION store.purchase_listing_verify_stock_and_availability();
+
 
 INSERT INTO store.authentication_provider
     (name)

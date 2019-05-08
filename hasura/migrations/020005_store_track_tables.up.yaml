@@ -54,3 +54,11 @@
     name: payment_status
     schema: store
   type: add_existing_table_or_view
+- args:
+    name: cart_listing
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: listing_stock
+    schema: store
+  type: add_existing_table_or_view

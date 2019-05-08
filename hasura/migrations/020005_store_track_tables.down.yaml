@@ -68,3 +68,13 @@
       name: payment_status
       schema: store
   type: untrack_table
+- args:
+    table:
+      name: cart_listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: listing_stock
+      schema: store
+  type: untrack_table

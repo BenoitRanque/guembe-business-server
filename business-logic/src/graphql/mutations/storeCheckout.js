@@ -52,7 +52,7 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
       LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.purchase.purchase_id
       WHERE store.purchase.purchase_id = $1
       AND store.purchase.client_id = $2
-      AND store.purchase.locked = false
+      AND store.purchase.purchase_id NOT IN(SELECT store.payment.payment_id FROM store.payment)
       GROUP BY store.purchase.purchase_id
       HAVING COUNT(store.purchase_listing.listing_id) > 0
     );
