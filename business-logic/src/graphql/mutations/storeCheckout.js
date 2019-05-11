@@ -61,24 +61,6 @@ async function validateCheckoutInput({ purchase_id, client_id, payment }, db) {
   if (!isOwnerAndPurchaseNotLocked) {
     throw new Error(`Compra no existente, bloqueada, o invalida`)
   }
-  // validate stock
-
-  const { rows: listingsWithoutStock } = await db.query(`
-    SELECT store.listing.public_name AS public_name
-    FROM store.purchase_listing
-        LEFT JOIN store.listing ON store.listing.listing_id = store.purchase_listing.listing_id
-        LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchase_listing.purchase_id
-        LEFT JOIN store.payment ON store.payment.purchase_id = store.purchase.purchase_id
-    WHERE store.listing.available_stock IS NOT NULL
-    AND (store.purchase_listing.purchase_id = $1 OR (store.purchase.locked = true AND store.payment.status IN ('PENDING', 'COMPLETED')))
-    GROUP BY store.purchase_listing.listing_id, store.listing.public_name, store.listing.available_stock, store.purchase_listing.purchase_id
-    HAVING SUM(store.purchase_listing.quantity) > store.listing.available_stock
-    AND store.purchase_listing.purchase_id = $1;
-  `, [ purchase_id ])
-
-  if (listingsWithoutStock.length) {
-    throw new Error(`Error de stock en ${listingsWithoutStock.map(({ public_name }) => public_name).join(', ')}`)
-  }
 
   return true
 }
@@ -118,9 +100,8 @@ async function createRemotePayment ({
     payer_email,
     custom: JSON.stringify({})
   }
-  console.log('creating remote payment')
+
   const remotePayment = await khipu.postPayments(paymentData)
-  console.log('created remote payment')
 
   return remotePayment
 }

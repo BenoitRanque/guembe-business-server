@@ -4,8 +4,9 @@ const express = require('express')
 
 const app = express()
 
-app.post('/notify', async function (req, res) {
-  const { notification_token, api_version } = req.query
+app.post('/notify', express.urlencoded({ extended: false }), async function (req, res) {
+  console.log(req.bopy)
+  const { notification_token, api_version } = req.body
   let updatedRemotePayment = null
   let updatedLocalPayment = null
   try {

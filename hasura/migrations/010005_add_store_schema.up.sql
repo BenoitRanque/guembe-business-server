@@ -76,7 +76,8 @@ CREATE TABLE store.listing_product (
 CREATE TABLE store.cart_listing (
     client_id UUID NOT NULL REFERENCES store.client (client_id)
         ON DELETE CASCADE,
-    listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
+    listing_id UUID NOT NULL REFERENCES store.listing (listing_id)
+        ON DELETE CASCADE,
     quantity INT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -218,12 +219,12 @@ CREATE VIEW store.listing_stock AS
 SELECT
     store.listing.listing_id AS listing_id,
     store.listing.available_stock AS available_stock,
-    SUM(store.purchase_listing.quantity) AS used_stock,
-    available_stock - SUM(store.purchase_listing.quantity) AS remaining_stock
+    COALESCE(SUM(store.purchase_listing.quantity), 0) AS used_stock,
+    available_stock - COALESCE(SUM(store.purchase_listing.quantity), 0) AS remaining_stock
 FROM store.listing
 LEFT JOIN store.purchase_listing ON store.listing.listing_id = store.purchase_listing.listing_id
     AND store.purchase_listing.purchase_id NOT IN
-        (SELECT store.payment.purchase_id FROM store.payment WHERE store.payment.status NOT IN ('PENDING', 'COMPLETE'))
+        (SELECT store.payment.purchase_id FROM store.payment WHERE store.payment.status NOT IN ('PENDING', 'COMPLETED'))
 WHERE store.listing.available_stock IS NOT NULL
 GROUP BY store.listing.listing_id, store.listing.available_stock;
 
@@ -298,7 +299,7 @@ BEGIN
             LEFT JOIN store.purchase_listing ON store.purchase_listing.purchase_id = store.payment.purchase_id
             LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
             LEFT JOIN store.product ON store.listing_product.product_id = store.product.product_id
-            WHERE store.payment.payment_id = OLD.payment_id
+            WHERE store.payment.payment_id = OLD.payment_id AND store.listing_product.price > 0
             GROUP BY store.product.economic_activity_id, store.payment.purchase_id;
 
             -- 2 create purchased products

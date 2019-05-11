@@ -56,7 +56,6 @@ const schema = buildSchema(/* GraphQL */`
   }
 
   type Query {
-    test: JSON
     store_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
     staff_authentication (username: String! password: String!): UserCrededentials!
   }

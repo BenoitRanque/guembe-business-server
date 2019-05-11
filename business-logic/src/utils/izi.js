@@ -97,9 +97,12 @@ class IZI {
         headers: this.getHeaders(data)
       })
 
+      console.log(response)
+
       return response
     } catch (error) {
-      console.error(error)
+      // console.error(error)
+      throw error
     }
   }
 }

@@ -65,7 +65,7 @@ WITH admin_user (user_id) AS (
     INSERT INTO staff.role
         (role_name, description)
     VALUES
-        ('administrator', 'Usuario administrador maximo. No utilizar en productivo')
+        ('administrator', 'Usuario administrador maximo.')
     RETURNING role_id
 )
 INSERT INTO staff.user_role

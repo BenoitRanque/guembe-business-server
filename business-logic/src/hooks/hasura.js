@@ -20,7 +20,7 @@ app.post('/store/invoice/insert', express.json(), async function (req, res) {
   let localInvoice = null
 
   try {
-    const alreadyEmited = await invoiceAlreadyEmited(invoice.invoice_id)
+    const alreadyEmited = await invoiceAlreadyEmited(invoice.invoice_id, req.db)
     if (alreadyEmited) {
       throw new Error(`Invoice ${invoice.invoice_id} already emitted: ${JSON.stringify(invoice)}`)
     }
@@ -88,7 +88,7 @@ async function getInvoiceItems (invoice_id, db) {
     LEFT JOIN store.listing_product ON store.purchase_listing.listing_id = store.listing_product.listing_id
     INNER JOIN store.product ON store.listing_product.product_id = store.product.product_id
       AND store.product.economic_activity_id = store.invoice.economic_activity_id
-    WHERE store.invoice.invoice_id = $1
+    WHERE store.invoice.invoice_id = $1 AND store.listing_product.price > 0
     GROUP BY store.product.product_id, store.product.public_name, store.listing_product.price;
   `, [ invoice_id ])
 

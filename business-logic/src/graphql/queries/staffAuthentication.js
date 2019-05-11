@@ -21,16 +21,18 @@ module.exports = async function staffAuthentication ({ username, password }, { d
       `
       const { rows: roleRows } = await db.query(query, [user_id])
 
-      const roles = roleRows.length
-        ? roleRows.map(({ role_name }) => role_name)
-        : ['anonymous'] // default to anonymous role
+      const roles = ['user']
+
+      if (roleRows.length) {
+        roles.push(...roleRows.map(({ role_name }) => role_name))
+      }
       const credentials = {
         username,
         user_id,
         roles
       }
       const claims = {
-        'x-hasura-default-role': roles[0], // default to first role
+        'x-hasura-default-role': roles[0], // default to user role
         'x-hasura-allowed-roles': roles,
         'x-hasura-user-id': user_id,
         'x-hasura-username': username

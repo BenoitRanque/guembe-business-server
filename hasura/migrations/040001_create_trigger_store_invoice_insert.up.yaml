@@ -6,7 +6,7 @@
       columns: '*'
     name: store_invoice_insert
     retry_conf:
-      interval_sec: 30
+      interval_sec: 120
       num_retries: 20
       timeout_sec: 120
     table:
