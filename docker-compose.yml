@@ -90,7 +90,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./business-logic/files:/usr/app/files
+      - ./private/uploads:/usr/app/uploads
 secrets:
   IZI_PUBLIC_KEY:
     file: ./private/IZI_PUBLIC_KEY.pub

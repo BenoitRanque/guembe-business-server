@@ -13,10 +13,22 @@ CREATE TABLE store.client (
     middle_name TEXT,
     last_name TEXT,
     email TEXT,
-    -- phone TEXT,
-    authentication_provider_name TEXT NOT NULL REFERENCES store.authentication_provider (name),
-    authentication_account_id TEXT NOT NULL,
-    UNIQUE (authentication_provider_name, authentication_account_id),
+    authentication_provider_name TEXT REFERENCES store.authentication_provider (name),
+    authentication_provider_account_id TEXT,
+    UNIQUE (authentication_provider_name, authentication_provider_account_id),
+    authentication_username TEXT UNIQUE,
+    authentication_password TEXT,
+    CHECK(
+        authentication_username IS NOT NULL AND
+        authentication_password IS NOT NULL AND
+        authentication_provider_name IS NULL AND
+        authentication_provider_account_id IS NULL
+        OR
+        authentication_username IS NULL AND
+        authentication_password IS NULL AND
+        authentication_provider_name IS NOT NULL AND
+        authentication_provider_account_id IS NOT NULL
+    ),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -72,6 +84,30 @@ CREATE TABLE store.listing_product (
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     PRIMARY KEY (listing_id, product_id, price, lifetime_id)
 );
+
+CREATE TABLE store.image_target (
+    name TEXT PRIMARY KEY
+)
+
+CREATE TABLE store.image (
+    image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    target TEXT NOT NULL REFERENCES store.image_target (name),
+    product_id UUID REFERENCES store.product(product_id)
+        ON DELETE CASCADE,
+    listing_id UUID REFERENCES store.listing(listing_id)
+        ON DELETE CASCADE,
+    path TEXT NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT null,
+    size BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
+    updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
+);
+
+CREATE TRIGGER support_attachement_set_updated_at BEFORE UPDATE ON support.attachement
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.cart_listing (
     client_id UUID NOT NULL REFERENCES store.client (client_id)
@@ -181,6 +217,17 @@ CREATE TABLE store.invoice (
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
     izi_link TEXT,
+    izi_numero INTEGER,
+    izi_comprador TEXT,
+    izi_razon_social TEXT,
+    izi_lista_items JSONB,
+    izi_autorizacion TEXT,
+    izi_monto_total DOUBLE PRECISION,
+    izi_descuentos DOUBLE PRECISION,
+    izi_sin_credito DOUBLE PRECISION,
+    izi_control TEXT,
+    izi_tipo_compra INTEGER,
+    izi_terminos_pago TEXT,
     UNIQUE (purchase_id, economic_activity_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
@@ -407,6 +454,12 @@ INSERT INTO store.authentication_provider
 VALUES
     ('google'),
     ('facebook');
+
+INSERT INTO store.image_target
+    (name)
+VALUES
+    ('product'),
+    ('listing');
 
 INSERT INTO store.payment_status (name, description) VALUES
     ('PENDING', 'pendiente'),

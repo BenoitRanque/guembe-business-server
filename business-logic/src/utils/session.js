@@ -22,10 +22,10 @@ function getRoles(req) {
   return req.session['x-hasura']['x-hasura-allowed-roles']
 }
 
-function getAccountId(req) {
+function getUserId(req) {
   requireSession(req)
 
-  return req.session['x-hasura']['x-hasura-account-id']
+  return req.session['x-hasura']['x-hasura-user-id']
 }
 
 function getUsername(req) {
@@ -73,12 +73,12 @@ function requireClientRole(session) {
 
 module.exports = {
   sessionMiddleware,
-  requireClientRole
-  // getAccountId,
-  // getRoles,
+  requireClientRole,
+  getUserId,
+  getRoles,
   // getUsername,
   // requireSession,
   // requireRole,
   // requireSessionMiddleware,
-  // requireRoleMiddleware
+  requireRoleMiddleware
 }

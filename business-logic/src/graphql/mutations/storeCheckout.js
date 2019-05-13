@@ -1,6 +1,6 @@
 
 const { requireClientRole } = require('../../utils/session')
-const updateLocalPayment = require('../../services/updateLocalPayment')
+const updateLocalPayment = require('../../utils/updateLocalPayment')
 const khipu = require('../../utils/khipu')
 
 module.exports = async function storeCheckout ({ purchase_id, payment }, ctx) {

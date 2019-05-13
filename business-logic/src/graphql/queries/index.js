@@ -1,4 +1,5 @@
 module.exports = {
   staff_authentication: require('./staffAuthentication'),
-  store_authentication: require('./storeAuthentication')
+  client_authentication: require('./clientAuthentication'),
+  client_open_authentication: require('./clientOpenAuthentication')
 }

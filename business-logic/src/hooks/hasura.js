@@ -104,7 +104,18 @@ async function updateLocalInvoice (invoice_id, update, db) {
   const allowedUpdateColumns = [
     'id',
     'timestamp',
-    'link'
+    'link',
+    'numero',
+    'comprador',
+    'razonSocial',
+    'listaItems',
+    'autorizacion',
+    'montoTotal',
+    'descuentos',
+    'sinCredito',
+    'control',
+    'tipoCompra',
+    'terminosPago'
   ]
 
   let updateFields = []
@@ -112,7 +123,7 @@ async function updateLocalInvoice (invoice_id, update, db) {
 
   Object.keys(update).forEach(column => {
     if (allowedUpdateColumns.includes(column) && update[column] !== null) {
-      updateFields.push(`izi_${column}`)
+      updateFields.push(`izi_${column.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}`)
       updateValues.push(update[column])
     }
   })
@@ -133,5 +144,9 @@ async function updateLocalInvoice (invoice_id, update, db) {
 
   return updatedInvoice
 }
+
+app.post('/store/image/delete', express.json(), async (req, res) => {
+  // delete image locally using id. Probably should set image location as env variable
+})
 
 module.exports = app

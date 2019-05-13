@@ -58,9 +58,12 @@ const schema = buildSchema(/* GraphQL */`
   type Query {
     store_authentication (provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
     staff_authentication (username: String! password: String!): UserCrededentials!
+    client_authentication(username: String! password: String!): ClientCredentials!
+    client_open_authentication(provider: OAuthProviderEnum! code: String! redirect_uri: String!): ClientCredentials!
   }
 
   type Mutation {
+    client_signup(username: String! password: String!): ClientCredentials!
     store_checkout (purchase_id: uuid! payment: StoreCheckoutPaymentInput!): StoreCheckoutPayload!
     verify_payment_status(payment_id: uuid!): StorePaymentStatus!
   }

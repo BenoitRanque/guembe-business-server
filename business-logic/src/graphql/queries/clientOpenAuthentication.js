@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const request = require('request-promise')
 
-module.exports = async function storeAuthentication ({ provider, redirect_uri, code }, { db }) {
+module.exports = async function clientOpenAuthentication ({ provider, redirect_uri, code }, { db }) {
   let clientAuth = null
   let clientAccount = null
 
@@ -46,11 +46,11 @@ async function loadClientAccount (clientAuth, db) {
     SELECT client_id, name, email, first_name, middle_name, last_name, authentication_provider_name
     FROM store.client
     WHERE authentication_provider_name = $1
-    AND authentication_account_id = $2
+    AND authentication_provider_account_id = $2
   `
   const { rows: [ client ] } = await db.query(query, [
     clientAuth.authentication_provider_name,
-    clientAuth.authentication_account_id
+    clientAuth.authentication_provider_account_id
   ])
 
   return client ? client : null
@@ -59,7 +59,7 @@ async function loadClientAccount (clientAuth, db) {
 async function createClientAccount (clientAuth, db) {
   const query = `
     INSERT INTO store.client
-      (name, email, first_name, middle_name, last_name, authentication_provider_name, authentication_account_id)
+      (name, email, first_name, middle_name, last_name, authentication_provider_name, authentication_provider_account_id)
     VALUES
       ($1, $2, $3, $4, $5, $6, $7)
     RETURNING
@@ -74,7 +74,7 @@ async function createClientAccount (clientAuth, db) {
     clientAuth.middle_name,
     clientAuth.last_name,
     clientAuth.authentication_provider_name,
-    clientAuth.authentication_account_id
+    clientAuth.authentication_provider_account_id
   ])
 
   return client
@@ -108,7 +108,7 @@ async function getOAuthFacebook (redirect_uri, code) {
 
   return {
     authentication_provider_name: 'facebook',
-    authentication_account_id: id,
+    authentication_provider_account_id: id,
     name: name ? name : '',
     email: email ? email : '',
     first_name: first_name ? first_name : '',
@@ -156,7 +156,7 @@ async function getOAuthGoogle (redirect_uri, code) {
 
   return {
     authentication_provider_name: 'google',
-    authentication_account_id: id,
+    authentication_provider_account_id: id,
     name: name ? name : '',
     email: email ? email : '',
     first_name: first_name ? first_name : '',
