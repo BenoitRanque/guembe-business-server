@@ -78,3 +78,8 @@
       name: listing_stock
       schema: store
   type: untrack_table
+- args:
+    table:
+      name: listing_image
+      schema: store
+  type: untrack_table

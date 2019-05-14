@@ -1,3 +1,4 @@
+const fs = require('fs')
 const express = require('express')
 const app = express()
 const izi = require('../utils/izi')
@@ -145,8 +146,19 @@ async function updateLocalInvoice (invoice_id, update, db) {
   return updatedInvoice
 }
 
-app.post('/store/image/delete', express.json(), async (req, res) => {
+app.post('/store/listing_image/delete', express.json(), async (req, res) => {
   // delete image locally using id. Probably should set image location as env variable
+  const filepath = `${process.env.FILE_UPLOAD_DIRECTORY}/listing/image/${req.body.event.data.old.image_id}`
+
+  try {
+    fs.unlinkSync(filepath)
+
+    res.status(200).end()
+  } catch (error) {
+    console.error(error)
+
+    res.status(500).end()
+  }
 })
 
 module.exports = app

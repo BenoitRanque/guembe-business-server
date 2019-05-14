@@ -297,3 +297,27 @@
       name: listing
       schema: store
   type: drop_relationship
+- args:
+    relationship: payments
+    table:
+      name: payment_status
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship

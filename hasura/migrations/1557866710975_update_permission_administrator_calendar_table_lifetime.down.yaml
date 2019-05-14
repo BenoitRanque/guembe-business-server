@@ -1,0 +1,6 @@
+- args:
+    role: administrator
+    table:
+      name: lifetime
+      schema: calendar
+  type: drop_select_permission

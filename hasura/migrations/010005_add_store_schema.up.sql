@@ -85,28 +85,22 @@ CREATE TABLE store.listing_product (
     PRIMARY KEY (listing_id, product_id, price, lifetime_id)
 );
 
-CREATE TABLE store.image_target (
-    name TEXT PRIMARY KEY
-)
-
-CREATE TABLE store.image (
+CREATE TABLE store.listing_image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    target TEXT NOT NULL REFERENCES store.image_target (name),
-    product_id UUID REFERENCES store.product(product_id)
-        ON DELETE CASCADE,
-    listing_id UUID REFERENCES store.listing(listing_id)
-        ON DELETE CASCADE,
-    path TEXT NOT NULL,
     name TEXT NOT NULL,
+    path TEXT NOT NULL,
     type TEXT NOT null,
     size BIGINT NOT NULL,
+    encoding TEXT NOT NULL,
+    listing_id UUID REFERENCES store.listing(listing_id)
+        ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
 );
 
-CREATE TRIGGER support_attachement_set_updated_at BEFORE UPDATE ON support.attachement
+CREATE TRIGGER store_listing_image_set_updated_at BEFORE UPDATE ON store.listing_image
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE store.cart_listing (
@@ -454,12 +448,6 @@ INSERT INTO store.authentication_provider
 VALUES
     ('google'),
     ('facebook');
-
-INSERT INTO store.image_target
-    (name)
-VALUES
-    ('product'),
-    ('listing');
 
 INSERT INTO store.payment_status (name, description) VALUES
     ('PENDING', 'pendiente'),

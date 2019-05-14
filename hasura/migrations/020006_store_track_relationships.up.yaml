@@ -469,3 +469,39 @@
           name: listing_stock
           schema: store
   type: create_object_relationship
+- args:
+    name: payments
+    table:
+      name: payment_status
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: status
+        table:
+          name: payment
+          schema: store
+  type: create_array_relationship
+- args:
+    name: created_by_user
+    table:
+      name: listing_image
+      schema: store
+    using:
+      foreign_key_constraint_on: created_by_user_id
+  type: create_object_relationship
+- args:
+    name: updated_by_user
+    table:
+      name: listing_image
+      schema: store
+    using:
+      foreign_key_constraint_on: updated_by_user_id
+  type: create_object_relationship
+- args:
+    name: listing
+    table:
+      name: listing_image
+      schema: store
+    using:
+      foreign_key_constraint_on: listing_id
+  type: create_object_relationship

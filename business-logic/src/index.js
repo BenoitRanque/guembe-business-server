@@ -10,7 +10,7 @@ app.use(sessionMiddleware)
 
 app.use('/graphql', require('./graphql'))
 app.use('/hooks', require('./hooks'))
-app.use('/upload', require('./services/upload'))
+app.use('/upload', require('./upload'))
 
 app.listen({ port }, () => {
   console.log(`Listening on port ${port}`);

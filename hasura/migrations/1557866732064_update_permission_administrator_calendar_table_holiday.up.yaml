@@ -1,0 +1,19 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - holiday_id
+      - name
+      - description
+      - holiday_date
+      - created_at
+      - updated_at
+      - created_by_user_id
+      - updated_by_user_id
+      filter: {}
+      limit: null
+    role: administrator
+    table:
+      name: holiday
+      schema: calendar
+  type: create_select_permission

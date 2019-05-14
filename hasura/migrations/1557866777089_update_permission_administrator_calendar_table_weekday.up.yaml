@@ -1,0 +1,13 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - weekday_id
+      - weekday_name
+      filter: {}
+      limit: null
+    role: administrator
+    table:
+      name: weekday
+      schema: calendar
+  type: create_select_permission
