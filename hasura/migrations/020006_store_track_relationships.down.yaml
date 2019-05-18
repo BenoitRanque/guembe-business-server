@@ -321,3 +321,21 @@
       name: listing_image
       schema: store
   type: drop_relationship
+- args:
+    relationship: listing_images
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client
+    table:
+      name: client_token
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client_tokens
+    table:
+      name: client
+      schema: store
+  type: drop_relationship

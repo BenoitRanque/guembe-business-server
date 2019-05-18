@@ -35,6 +35,38 @@ CREATE TABLE store.client (
 CREATE TRIGGER store_client_set_updated_at BEFORE UPDATE ON store.client
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE FUNCTION store.hash_password()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.authentication_password IS NOT NULL THEN
+        NEW.authentication_password = crypt(NEW.authentication_password, gen_salt('bf'));
+    END IF;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER store_client_hash_password BEFORE INSERT OR UPDATE ON store.client
+    FOR EACH ROW EXECUTE FUNCTION store.hash_password();
+
+CREATE TABLE store.client_token (
+    token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id UUID NOT NULL REFERENCES store.client (client_id),
+    expires TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now() + INTERVAL '1 minute'
+);
+
+CREATE FUNCTION store.client_token_delete_expired()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM store.client_token
+    WHERE store.client_token.expires < now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER store_client_token_delete_expired AFTER INSERT ON store.client_token
+    EXECUTE FUNCTION store.client_token_delete_expired();
+
 CREATE TABLE store.economic_activity (
     economic_activity_id INTEGER PRIMARY KEY,
     description TEXT
@@ -92,6 +124,7 @@ CREATE TABLE store.listing_image (
     type TEXT NOT null,
     size BIGINT NOT NULL,
     encoding TEXT NOT NULL,
+    highlighted BOOLEAN NOT NULL DEFAULT false,
     listing_id UUID REFERENCES store.listing(listing_id)
         ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

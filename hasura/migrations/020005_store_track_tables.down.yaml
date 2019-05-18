@@ -83,3 +83,8 @@
       name: listing_image
       schema: store
   type: untrack_table
+- args:
+    table:
+      name: client_token
+      schema: store
+  type: untrack_table

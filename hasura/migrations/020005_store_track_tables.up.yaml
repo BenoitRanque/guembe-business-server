@@ -66,3 +66,7 @@
     name: listing_image
     schema: store
   type: add_existing_table_or_view
+- args:
+    name: client_token
+    schema: store
+  type: add_existing_table_or_view

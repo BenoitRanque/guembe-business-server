@@ -99,12 +99,14 @@ INSERT INTO calendar.lifetime_weekday (lifetime_id, weekday_id) VALUES
   (lifetime_3_id, 5); -- Viernes
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Ingreso Adulto',
   'Ingreso',
   'Accesso al parque y todos sus atractivos para 1 adulto entre 18 y 69 años de edad. No incluye alimentos ni bebidas.',
   71409,
@@ -113,12 +115,14 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_1_id;
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Ingreso Adolecente',
   'Ingreso Adolecente',
   'Accesso al parque y todos sus atractivos para 1 adolecente entre 12 y 17 años de edad. No incluye alimentos ni bebidas.',
   71409,
@@ -127,12 +131,14 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_2_id;
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Ingreso Niño',
   'Ingreso Niño',
   'Accesso al parque y todos sus atractivos para 1 niño entre 3 y 11 años de edad. No incluye alimentos ni bebidas.',
   71409,
@@ -141,12 +147,14 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_3_id;
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Buffet Adulto',
   'Buffet Adulto',
   'Buffet de cubierto libre para almuerzo. Disponible desde las 12:00 hasta las 15:00 horas.',
   72203,
@@ -155,12 +163,14 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_4_id;
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Coctail Promocional Bajo Costo',
   'Coctail de bienvenida',
   'Coctail promocional, disponible en cualquiera de nuestros bares. Mescla de fernet, ron, wisky, cerveza, azucar y yo que se...',
   72203,
@@ -169,12 +179,14 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_5_id;
 
 INSERT INTO store.product (
+  private_name,
   public_name,
   description,
   economic_activity_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Chop de Cerveza Prost',
   'Chop de Cerveza',
   'Chop de Cerveza Prost, disponible en nuestro beergarden',
   72203,
@@ -183,6 +195,7 @@ INSERT INTO store.product (
 ) RETURNING product_id INTO product_6_id;
 
 INSERT INTO store.listing (
+  private_name,
   public_name,
   description,
   available_from,
@@ -191,6 +204,7 @@ INSERT INTO store.listing (
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Paquete de ingreso adulto 2019',
   'Ingreso Adulto',
   'Incluye Un ingreso para adulto',
   '2019-01-01',
@@ -214,6 +228,7 @@ INSERT INTO store.listing_product (
 );
 
 INSERT INTO store.listing (
+  private_name,
   public_name,
   description,
   available_from,
@@ -222,6 +237,7 @@ INSERT INTO store.listing (
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Paquete full day 2019',
   'Paquete Full Day adulto',
   'Llevate el buffet a solo 100 bs comprando este paquete. Para 1 adulto, ingreso & buffet. No inlcuye bebidas.',
   '2019-01-01',
@@ -251,6 +267,7 @@ INSERT INTO store.listing_product (
 );
 
 INSERT INTO store.listing (
+  private_name,
   public_name,
   description,
   available_from,
@@ -259,6 +276,7 @@ INSERT INTO store.listing (
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Paquete de ingreso con coctail promocional enero - junio 2019 (cupo limitado)',
   'CUPO LIMITADO: Ingreso con coctail de bienvenida gratis',
   'Incluye 1 ingreso para adultos, mas un coctail de bienvenida completamente gratis',
   '2019-01-01',
@@ -288,6 +306,7 @@ INSERT INTO store.listing_product (
 );
 
 INSERT INTO store.listing (
+  private_name,
   public_name,
   description,
   available_from,
@@ -296,6 +315,7 @@ INSERT INTO store.listing (
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Paquete de 1 ingreso gratis por la compra de 3 ingresos',
   'CUPO LIMITADO: Por la compra de 3 ingresos, llevate 1 gratis',
   'Incluye 3 ingresos mas uno completamente gratis!. Solo valido para uso los dias de semana, excluyendo feriados',
   '2019-01-01',
@@ -325,6 +345,7 @@ INSERT INTO store.listing_product (
 );
 
 INSERT INTO store.listing (
+  private_name,
   public_name,
   description,
   available_from,
@@ -333,6 +354,7 @@ INSERT INTO store.listing (
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
+  'Paquete de ingreso & chop de cerveza con un chop gratis (cupo 10)',
   'CUPO LIMITADO: Por la compra de un ingreso y un chop de cerveza, llevate otro chop gratis!',
   'Incluye un ingreso para adulto, y 2 chop de cerveza',
   '2019-01-01',

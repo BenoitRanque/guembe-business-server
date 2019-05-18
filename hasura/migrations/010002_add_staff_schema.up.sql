@@ -4,7 +4,7 @@ CREATE SCHEMA staff;
 
 -- Password Hashing trigger Function
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE OR REPLACE FUNCTION staff.hash_password()
+CREATE FUNCTION staff.hash_password()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.password IS NOT NULL THEN

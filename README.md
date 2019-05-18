@@ -30,5 +30,5 @@ sudo docker tag <IMAGE_ID> <image:tag>
 This powershell script will read multiple files and output them as one. Usefull for hasura migrations
 
 ```
-Get-ChildItem ./input/folder -include *.yaml -rec | ForEach-Object {gc $_; ""} | out-file ./output/file.txt
+Get-ChildItem ./input/folder -include *.yaml -rec | ForEach-Object {gc $_; ""} | out-file ./output/file.txt -Append
 ```

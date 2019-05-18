@@ -22,3 +22,27 @@
       name: role
       schema: staff
   type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: user
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: user
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: user_role
+      schema: staff
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: user_role
+      schema: staff
+  type: drop_relationship

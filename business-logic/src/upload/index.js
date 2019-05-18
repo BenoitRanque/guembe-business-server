@@ -4,6 +4,7 @@ const fs = require('fs')
 const corser = require('corser')
 const multer = require('multer')
 const uuid = require('uuid/v4')
+const sharp = require('sharp')
 const { requireRoleMiddleware, getUserId } = require('../utils/session')
 
 const upload = multer({
@@ -60,6 +61,9 @@ app.post('/listing/image/:listing_id', requireRoleMiddleware(['administrator']),
   ]
 
   try {
+    const placeholder = await getPlaceHolder(req.file)
+    console.log(placeholder)
+
     await req.db.query(query, parameters)
 
     res.status(200).end()
@@ -110,5 +114,15 @@ app.get('/listing/image', async (req, res) => {
     res.status(500).end()
   }
 })
+
+async function getPlaceHolder({ path }) {
+  const img = sharp(path)
+
+  const meta = await img.metadata()
+
+  const buffer = await img.resize(Math.floor(meta.width / 5), Math.floor(meta.height / 5)).toBuffer()
+
+  return buffer.toString('base64')
+}
 
 module.exports = app

@@ -505,3 +505,35 @@
     using:
       foreign_key_constraint_on: listing_id
   type: create_object_relationship
+- args:
+    name: listing_images
+    table:
+      name: listing
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: listing_id
+        table:
+          name: listing_image
+          schema: store
+  type: create_array_relationship
+- args:
+    name: client
+    table:
+      name: client_token
+      schema: store
+    using:
+      foreign_key_constraint_on: client_id
+  type: create_object_relationship
+- args:
+    name: client_tokens
+    table:
+      name: client
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: client_id
+        table:
+          name: client_token
+          schema: store
+  type: create_array_relationship

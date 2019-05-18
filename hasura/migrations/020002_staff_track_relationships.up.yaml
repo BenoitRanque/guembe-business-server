@@ -38,3 +38,35 @@
           name: user_role
           schema: staff
   type: create_array_relationship
+- args:
+    name: created_by_user
+    table:
+      name: user
+      schema: staff
+    using:
+      foreign_key_constraint_on: created_by_user_id
+  type: create_object_relationship
+- args:
+    name: updated_by_user
+    table:
+      name: user
+      schema: staff
+    using:
+      foreign_key_constraint_on: updated_by_user_id
+  type: create_object_relationship
+- args:
+    name: created_by_user
+    table:
+      name: user_role
+      schema: staff
+    using:
+      foreign_key_constraint_on: created_by_user_id
+  type: create_object_relationship
+- args:
+    name: updated_by_user
+    table:
+      name: user_role
+      schema: staff
+    using:
+      foreign_key_constraint_on: updated_by_user_id
+  type: create_object_relationship
