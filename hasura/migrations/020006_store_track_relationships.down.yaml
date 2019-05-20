@@ -176,21 +176,21 @@
 - args:
     relationship: created_by_user
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
   type: drop_relationship
 
 - args:
     relationship: purchased_product
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
   type: drop_relationship
 
 - args:
     relationship: updated_by_user
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
   type: drop_relationship
 
@@ -337,5 +337,29 @@
     relationship: client_tokens
     table:
       name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_products
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_product
+    table:
+      name: purchased_product_usable
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_product_usable
+    table:
+      name: purchased_product
       schema: store
   type: drop_relationship

@@ -4,24 +4,24 @@ CREATE SCHEMA calendar;
 
 CREATE TABLE calendar.weekday (
     weekday_id INT PRIMARY KEY,
-    weekday_name TEXT NOT NULL
+    description TEXT NOT NULL
 );
 
-INSERT INTO calendar.weekday (weekday_id, weekday_name) VALUES
-    (0, 'Feriados'),
+INSERT INTO calendar.weekday (weekday_id, description) VALUES
+    (0, 'Domingo'),
     (1, 'Lunes'),
     (2, 'Martes'),
     (3, 'Miercoles'),
     (4, 'Jueves'),
     (5, 'Viernes'),
-    (6, 'Sabado'),
-    (7, 'Domingo');
+    (6, 'Sabado');
 
 CREATE TABLE calendar.holiday (
     holiday_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
+    private_name TEXT,
+    public_name TEXT,
     description TEXT,
-    holiday_date DATE NOT NULL,
+    date DATE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
@@ -36,6 +36,7 @@ CREATE TABLE calendar.lifetime (
     private_name TEXT NOT NULL,
     public_name TEXT NOT NULL,
     description TEXT,
+    include_holidays BOOLEAN NOT NULL,
     "start" DATE NOT NULL,
     "end" DATE NOT NULL,
     CHECK ("start" <= "end"),

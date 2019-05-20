@@ -51,6 +51,8 @@ CREATE TRIGGER store_client_hash_password BEFORE INSERT OR UPDATE ON store.clien
 
 CREATE TABLE store.client_token (
     token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- code is a random number between 0 and 999999
+    code INTEGER NOT NULL UNIQUE DEFAULT floor(random() * 1000000)::int,
     client_id UUID NOT NULL REFERENCES store.client (client_id),
     expires TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now() + INTERVAL '1 minute'
 );
@@ -264,6 +266,7 @@ CREATE TABLE store.purchased_product (
     purchased_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchase_id UUID NOT NULL REFERENCES store.purchase (purchase_id)
         ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES store.client (client_id),
     product_id UUID NOT NULL REFERENCES store.product (product_id),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -272,8 +275,8 @@ CREATE TABLE store.purchased_product (
 CREATE TRIGGER store_puchased_product_set_updated_at BEFORE UPDATE ON store.purchased_product
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE store.purchased_product_usage (
-    purchased_product_usage_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE store.purchased_product_use (
+    purchased_product_use_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     purchased_product_id UUID NOT NULL REFERENCES store.purchased_product (purchased_product_id)
         ON DELETE RESTRICT, -- once a usage exists, the product cannot be deleted
     cancelled BOOLEAN DEFAULT false,
@@ -283,7 +286,7 @@ CREATE TABLE store.purchased_product_usage (
     created_by_user_id UUID NOT NULL REFERENCES staff.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES staff.user (user_id)
 );
-CREATE TRIGGER store_purchased_product_usage_set_updated_at BEFORE UPDATE ON store.purchased_product_usage
+CREATE TRIGGER store_purchased_product_use_set_updated_at BEFORE UPDATE ON store.purchased_product_use
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE VIEW store.listing_stock AS
@@ -310,21 +313,20 @@ AND (store.listing.available_stock IS NULL
     OR store.listing.listing_id IN (SELECT store.listing_stock.listing_id FROM store.listing_stock WHERE store.listing_stock.remaining_stock > 0))
 ORDER BY store.listing.created_at DESC;
 
--- CREATE VIEW store.usable_purchased_product AS
--- SELECT
---     store.purchase.client_id,
---     store.purchased_product.purchase_product_id
--- FROM store.purchased_product
--- LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchased_product.purchase_id
--- WHERE NOT store.purchased_product.purchase_product_id IN (SELECT purchase_product_id FROM store.purchased_product_usage WHERE store.purchased_product_usage.cancelled = false)
--- DAYOFWEEK(now()) IN (SELECT weekday_id FROM )
--- AND ()
-
--- SELECT calendar.weekday_id FROM calendar.lifetime_weekday WHERE calendar.lifetime_weekday.lifetime_id = store.
-
--- 1 check if lifetime range inside dates
--- 2 check if day of week inside permited days of week
--- or day is holiday
+CREATE VIEW store.purchased_product_usable AS
+SELECT
+    store.purchased_product.purchased_product_id
+FROM store.purchased_product
+LEFT JOIN calendar.lifetime ON store.purchased_product.lifetime_id = calendar.lifetime.lifetime_id
+LEFT JOIN calendar.lifetime_weekday ON calendar.lifetime.lifetime_id = calendar.lifetime_weekday.lifetime_id AND calendar.lifetime_weekday.weekday_id = EXTRACT(DOW FROM now())::int
+LEFT JOIN calendar.holiday ON calendar.holiday.date = CURRENT_DATE
+WHERE now() >= calendar.lifetime.start AND now() <= calendar.lifetime.end
+AND store.purchased_product.purchased_product_id NOT IN (SELECT store.purchased_product_use.purchased_product_id FROM store.purchased_product_use WHERE store.purchased_product_use.cancelled = false)
+AND ((
+    calendar.holiday.date IS NULL AND calendar.lifetime_weekday.weekday_id IS NOT NULL
+) OR (
+    calendar.holiday.date IS NOT NULL AND calendar.lifetime.include_holidays = true
+));
 
 -- once a purchase exists, a listing cannot be modified cannot be modified
 CREATE FUNCTION store.protect_purchased_listing()
@@ -411,12 +413,14 @@ BEGIN
                     ) AS quantities
                 )::int)
             )
-            INSERT INTO store.purchased_product (purchase_id, product_id, lifetime_id)
+            INSERT INTO store.purchased_product (purchase_id, client_id, product_id, lifetime_id)
             SELECT
                 store.payment.purchase_id,
+                store.purchase.client_id,
                 store.listing_product.product_id,
                 store.listing_product.lifetime_id
             FROM store.payment
+            LEFT JOIN store.purchase ON store.payment.purchase_id = store.purchase.purchase_id
             LEFT JOIN store.purchase_listing ON store.payment.purchase_id = store.purchase_listing.purchase_id
             -- join on numbers list to get one record per purchase listing instance
             LEFT JOIN numbers_list AS listing_numbers ON listing_numbers.number <= store.purchase_listing.quantity
@@ -488,6 +492,19 @@ CREATE TRIGGER store_purchase_listing_verify_stock_and_availability
     BEFORE INSERT OR UPDATE ON store.purchase_listing
     FOR EACH ROW EXECUTE FUNCTION store.purchase_listing_verify_stock_and_availability();
 
+CREATE FUNCTION store.validate_purchased_product_use()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.purchased_product_id) NOT IN (SELECT store.purchased_product_usable.purchased_product_id) THEN
+        RAISE EXCEPTION 'Cannot use this product.';
+    END IF;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER validate_store_purchased_product_use
+    BEFORE INSERT OR UPDATE ON store.purchased_product_use
+    FOR EACH ROW EXECUTE FUNCTION store.validate_purchased_product_use();
 
 INSERT INTO store.authentication_provider
     (name)

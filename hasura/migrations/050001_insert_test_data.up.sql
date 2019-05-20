@@ -30,6 +30,7 @@ INSERT INTO calendar.lifetime (
   description,
   "start",
   "end",
+  include_holidays,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
@@ -38,18 +39,18 @@ INSERT INTO calendar.lifetime (
   'Este producto es valido de Lunes a Domingo, incluyendo feriados, hasta el 31 de diciembre 2019',
   '2019-01-01',
   '2019-12-31',
+  true,
   admin_user_id,
   admin_user_id
 ) RETURNING lifetime_id INTO lifetime_1_id;
 INSERT INTO calendar.lifetime_weekday (lifetime_id, weekday_id) VALUES
-  (lifetime_1_id, 0), -- Feriados
+  (lifetime_1_id, 0), -- Domingo
   (lifetime_1_id, 1), -- Lunes
   (lifetime_1_id, 2), -- Martes
   (lifetime_1_id, 3), -- Miercoles
   (lifetime_1_id, 4), -- Jueves
   (lifetime_1_id, 5), -- Viernes
-  (lifetime_1_id, 6), -- Sabado
-  (lifetime_1_id, 7); -- Domingo
+  (lifetime_1_id, 6); -- Sabado
 
 INSERT INTO calendar.lifetime (
   private_name,
@@ -57,6 +58,7 @@ INSERT INTO calendar.lifetime (
   description,
   "start",
   "end",
+  include_holidays,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
@@ -65,14 +67,14 @@ INSERT INTO calendar.lifetime (
   'Este producto es valido de Viernes a Domingo, mas Feriados, desde el 01 de mayo hasta el 30 de septiembre 2019',
   '2019-05-01',
   '2019-09-30',
+  true,
   admin_user_id,
   admin_user_id
 ) RETURNING lifetime_id INTO lifetime_2_id;
 INSERT INTO calendar.lifetime_weekday (lifetime_id, weekday_id) VALUES
-  (lifetime_2_id, 0), -- Feriados
+  (lifetime_2_id, 0), -- Domingo
   (lifetime_2_id, 5), -- Viernes
-  (lifetime_2_id, 6), -- Sabado
-  (lifetime_2_id, 7); -- Domingo
+  (lifetime_2_id, 6); -- Sabado
 
 INSERT INTO calendar.lifetime (
   private_name,
@@ -80,6 +82,7 @@ INSERT INTO calendar.lifetime (
   description,
   "start",
   "end",
+  include_holidays,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
@@ -88,6 +91,7 @@ INSERT INTO calendar.lifetime (
   'Este producto es valido de lunes a viernes, excluyendo feriados, hasta el 31 de diciembre 2019',
   '2019-01-01',
   '2019-12-31',
+  false,
   admin_user_id,
   admin_user_id
 ) RETURNING lifetime_id INTO lifetime_3_id;

@@ -43,7 +43,7 @@
     schema: store
   type: add_existing_table_or_view
 - args:
-    name: purchased_product_usage
+    name: purchased_product_use
     schema: store
   type: add_existing_table_or_view
 - args:
@@ -68,5 +68,9 @@
   type: add_existing_table_or_view
 - args:
     name: client_token
+    schema: store
+  type: add_existing_table_or_view
+- args:
+    name: purchased_product_usable
     schema: store
   type: add_existing_table_or_view

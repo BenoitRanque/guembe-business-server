@@ -55,7 +55,7 @@
   type: untrack_table
 - args:
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
   type: untrack_table
 - args:
@@ -86,5 +86,10 @@
 - args:
     table:
       name: client_token
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchased_product_usable
       schema: store
   type: untrack_table

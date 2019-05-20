@@ -260,14 +260,14 @@
       foreign_key_constraint_on:
         column: purchased_product_id
         table:
-          name: purchased_product_usage
+          name: purchased_product_use
           schema: store
   type: create_array_relationship
 
 - args:
     name: created_by_user
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
     using:
       foreign_key_constraint_on: created_by_user_id
@@ -276,7 +276,7 @@
 - args:
     name: purchased_product
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
     using:
       foreign_key_constraint_on: purchased_product_id
@@ -285,7 +285,7 @@
 - args:
     name: updated_by_user
     table:
-      name: purchased_product_usage
+      name: purchased_product_use
       schema: store
     using:
       foreign_key_constraint_on: updated_by_user_id
@@ -537,3 +537,49 @@
           name: client_token
           schema: store
   type: create_array_relationship
+- args:
+    name: purchased_products
+    table:
+      name: client
+      schema: store
+    using:
+      foreign_key_constraint_on:
+        column: client_id
+        table:
+          name: purchased_product
+          schema: store
+  type: create_array_relationship
+- args:
+    name: purchased_product
+    table:
+      name: purchased_product_usable
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          purchased_product_id: purchased_product_id
+        remote_table:
+          name: purchased_product
+          schema: store
+  type: create_object_relationship
+- args:
+    name: client
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      foreign_key_constraint_on: client_id
+  type: create_object_relationship
+- args:
+    name: purchased_product_usable
+    table:
+      name: purchased_product
+      schema: store
+    using:
+      manual_configuration:
+        column_mapping:
+          purchased_product_id: purchased_product_id
+        remote_table:
+          name: purchased_product_usable
+          schema: store
+  type: create_object_relationship

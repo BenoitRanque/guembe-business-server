@@ -23,7 +23,7 @@ const upload = multer({
     // You can always pass an error if something goes wrong:
     // callback(new Error('I don\'t have a clue!'))
 
-    if (/image\/(jpg|png)/.test(file.mimetype)) {
+    if (/image\/(jpe?g|png)/.test(file.mimetype)) {
       callback(null, true)
     } else {
       callback(null, false)
@@ -47,6 +47,7 @@ app.use(corser.create({
 app.post('/listing/upload/:listing_id', requireRoleMiddleware(['administrator']), upload.single('image'), async (req, res) => {
 
   if (!req.file) {
+    console.log('request file absent')
     return res.status(400).end()
   }
 
