@@ -147,11 +147,24 @@ async function updateLocalInvoice (invoice_id, update, db) {
 }
 
 app.post('/store/listing_image/delete', express.json(), async (req, res) => {
-  // delete image locally using id. Probably should set image location as env variable
-  const filepath = `${process.env.FILE_UPLOAD_DIRECTORY}/listing/image/${req.body.event.data.old.image_id}`
+  const image_id = req.body.event.data.old.image_id
 
   try {
-    fs.unlinkSync(filepath)
+    if (fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.xl.jpg`)) {
+      fs.unlinkSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.xl.jpg`)
+    }
+    if (fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.lg.jpg`)) {
+      fs.unlinkSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.lg.jpg`)
+    }
+    if (fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.md.jpg`)) {
+      fs.unlinkSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.md.jpg`)
+    }
+    if (fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.sm.jpg`)) {
+      fs.unlinkSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.sm.jpg`)
+    }
+    if (fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.xs.jpg`)) {
+      fs.unlinkSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing/${image_id}.xs.jpg`)
+    }
 
     res.status(200).end()
   } catch (error) {

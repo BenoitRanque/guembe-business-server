@@ -120,10 +120,7 @@ CREATE TABLE store.listing_product (
 CREATE TABLE store.listing_image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    path TEXT NOT NULL,
-    type TEXT NOT null,
-    size BIGINT NOT NULL,
-    encoding TEXT NOT NULL,
+    placeholder TEXT NOT NULL,
     highlighted BOOLEAN NOT NULL DEFAULT false,
     listing_id UUID REFERENCES store.listing(listing_id)
         ON DELETE CASCADE,
@@ -312,6 +309,22 @@ WHERE store.listing.available_from <= NOW() AND store.listing.available_to >= NO
 AND (store.listing.available_stock IS NULL
     OR store.listing.listing_id IN (SELECT store.listing_stock.listing_id FROM store.listing_stock WHERE store.listing_stock.remaining_stock > 0))
 ORDER BY store.listing.created_at DESC;
+
+-- CREATE VIEW store.usable_purchased_product AS
+-- SELECT
+--     store.purchase.client_id,
+--     store.purchased_product.purchase_product_id
+-- FROM store.purchased_product
+-- LEFT JOIN store.purchase ON store.purchase.purchase_id = store.purchased_product.purchase_id
+-- WHERE NOT store.purchased_product.purchase_product_id IN (SELECT purchase_product_id FROM store.purchased_product_usage WHERE store.purchased_product_usage.cancelled = false)
+-- DAYOFWEEK(now()) IN (SELECT weekday_id FROM )
+-- AND ()
+
+-- SELECT calendar.weekday_id FROM calendar.lifetime_weekday WHERE calendar.lifetime_weekday.lifetime_id = store.
+
+-- 1 check if lifetime range inside dates
+-- 2 check if day of week inside permited days of week
+-- or day is holiday
 
 -- once a purchase exists, a listing cannot be modified cannot be modified
 CREATE FUNCTION store.protect_purchased_listing()
