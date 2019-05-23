@@ -167,7 +167,7 @@
   type: drop_relationship
 
 - args:
-    relationship: usages
+    relationship: purchased_product_uses
     table:
       name: purchased_product
       schema: store
@@ -280,12 +280,6 @@
       schema: store
   type: drop_relationship
 - args:
-    relationship: payments
-    table:
-      name: purchase
-      schema: store
-  type: drop_relationship
-- args:
     relationship: listing
     table:
       name: listing_stock
@@ -359,6 +353,12 @@
   type: drop_relationship
 - args:
     relationship: purchased_product_usable
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
     table:
       name: purchased_product
       schema: store

@@ -12,11 +12,14 @@ DECLARE
     product_4_id UUID;
     product_5_id UUID;
     product_6_id UUID;
+    product_7_id UUID;
     listing_1_id UUID;
     listing_2_id UUID;
     listing_3_id UUID;
     listing_4_id UUID;
     listing_5_id UUID;
+    listing_6_id UUID;
+    listing_7_id UUID;
 BEGIN
 
 SELECT user_id
@@ -197,6 +200,22 @@ INSERT INTO store.product (
   admin_user_id,
   admin_user_id
 ) RETURNING product_id INTO product_6_id;
+
+INSERT INTO store.product (
+  private_name,
+  public_name,
+  description,
+  economic_activity_id,
+  created_by_user_id,
+  updated_by_user_id
+) VALUES (
+  'Ingreso Adulto 2 por 1',
+  'Ingreso Adulto 2x1',
+  'Ingreso 2 por 1. Al ser un solo producto, ambos ingresos deben utilizarse al mismo tiempo',
+  72203,
+  admin_user_id,
+  admin_user_id
+) RETURNING product_id INTO product_7_id;
 
 INSERT INTO store.listing (
   private_name,
@@ -390,6 +409,78 @@ INSERT INTO store.listing_product (
   product_6_id,
   1,
   0,
+  lifetime_2_id
+);
+
+INSERT INTO store.listing (
+  private_name,
+  public_name,
+  description,
+  available_from,
+  available_to,
+  available_stock,
+  created_by_user_id,
+  updated_by_user_id
+) VALUES (
+  'Paquete comprate un ingreso llevate 2 (cupo 10)',
+  'CUPO LIMITADO: Por la compra de 1 ingreso, llevate otro gratis',
+  'Incluye dos ingresos para adulto',
+  '2019-01-01',
+  '2019-06-30',
+  10,
+  admin_user_id,
+  admin_user_id
+) RETURNING listing_id INTO listing_6_id;
+INSERT INTO store.listing_product (
+  listing_id,
+  product_id,
+  quantity,
+  price,
+  lifetime_id
+) VALUES (
+  listing_6_id,
+  product_1_id,
+  1,
+  14000,
+  lifetime_1_id
+), (
+  listing_6_id,
+  product_1_id,
+  1,
+  0,
+  lifetime_1_id
+);
+
+INSERT INTO store.listing (
+  private_name,
+  public_name,
+  description,
+  available_from,
+  available_to,
+  available_stock,
+  created_by_user_id,
+  updated_by_user_id
+) VALUES (
+  'Paquete 2 por 1',
+  'Paquete 2 por 1!',
+  'Con este paquete ingresan 2 personas a precio de 1. Solo valido de lunes a viernes',
+  '2019-01-01',
+  '2019-06-30',
+  10,
+  admin_user_id,
+  admin_user_id
+) RETURNING listing_id INTO listing_7_id;
+INSERT INTO store.listing_product (
+  listing_id,
+  product_id,
+  quantity,
+  price,
+  lifetime_id
+) VALUES (
+  listing_7_id,
+  product_7_id,
+  1,
+  14000,
   lifetime_2_id
 );
 

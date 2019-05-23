@@ -268,6 +268,7 @@ CREATE TABLE store.purchased_product (
         ON DELETE CASCADE,
     client_id UUID NOT NULL REFERENCES store.client (client_id),
     product_id UUID NOT NULL REFERENCES store.product (product_id),
+    listing_id UUID NOT NULL REFERENCES store.listing (listing_id),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
@@ -413,11 +414,12 @@ BEGIN
                     ) AS quantities
                 )::int)
             )
-            INSERT INTO store.purchased_product (purchase_id, client_id, product_id, lifetime_id)
+            INSERT INTO store.purchased_product (purchase_id, client_id, product_id, listing_id, lifetime_id)
             SELECT
                 store.payment.purchase_id,
                 store.purchase.client_id,
                 store.listing_product.product_id,
+                store.listing_product.listing_id,
                 store.listing_product.lifetime_id
             FROM store.payment
             LEFT JOIN store.purchase ON store.payment.purchase_id = store.purchase.purchase_id
@@ -489,13 +491,13 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER store_purchase_listing_verify_stock_and_availability
-    BEFORE INSERT OR UPDATE ON store.purchase_listing
+    BEFORE INSERT ON store.purchase_listing
     FOR EACH ROW EXECUTE FUNCTION store.purchase_listing_verify_stock_and_availability();
 
 CREATE FUNCTION store.validate_purchased_product_use()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF (NEW.purchased_product_id) NOT IN (SELECT store.purchased_product_usable.purchased_product_id) THEN
+    IF (NEW.purchased_product_id) NOT IN (SELECT store.purchased_product_usable.purchased_product_id FROM store.purchased_product_usable) THEN
         RAISE EXCEPTION 'Cannot use this product.';
     END IF;
     RETURN NEW;
@@ -503,7 +505,7 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER validate_store_purchased_product_use
-    BEFORE INSERT OR UPDATE ON store.purchased_product_use
+    BEFORE INSERT ON store.purchased_product_use
     FOR EACH ROW EXECUTE FUNCTION store.validate_purchased_product_use();
 
 INSERT INTO store.authentication_provider
