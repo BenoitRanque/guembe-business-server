@@ -46,16 +46,81 @@ app.use(async function (req, res, next) {
 
 })
 
-app.post('/authenticate', function (req, res, next) {
+app.post('/authenticate', express.json(), function (req, res, next) {
+  const username = 'admin'
+  const user_id = ''
+  const roles = ['role']
+
 
 })
 
 app.get('/auth', function (req, res) {
+  if (req.session) {
+    res.status(200).json({
+      'x-hasura-role': ''
+    })
+  }
   // hasura webhook
   // if no session is present,
   // read cookies
   // validate cookie
   // return hasura role and additional headers
 })
+
+function createToken () {
+  return jwt.sign({
+    xsrfToken: uuid(),
+    // session is null if anonymous/not signed in
+    session: {
+      user_id
+      username
+      roles
+    }
+  }, SECRET)
+}
+
+function setSessionCookies (res, token) {
+  const [ tokenHeader, tokenBody, tokenSignature ] = token.split('.')
+
+  res.cookie('payload', `${tokenHeader}.${tokenBody}`, {
+    httpOnly: false, // this data is accessed by the frontend to define view permissions etc
+    // secure: true, // in production
+    maxAge: 30 * 60 * 1000 // 30 minutes
+  })
+  res.cookie('signature', tokenSignature, {
+    expires: 0, // create session cookie
+    // secure: true, // in production
+    httpOnly: true
+  })
+}
+
+function validateToken (req) {
+  const token = `${req.cookies.public}.${req.cookies.private}`
+  const xsrfToken = req.get('X-CSRF-TOKEN')
+
+  const session = jwt.verify(token, SECRET)
+
+  if (session.xsrfToken !== xsrfToken) {
+    // houston we have a problem
+  }
+
+  req.session = session
+
+  // happy
+}
+
+// names
+/*
+x-csrf-token
+x-hasura-role
+
+
+*/
+
+// cookies
+// private
+// public
+
+
 
 module.exports = app
