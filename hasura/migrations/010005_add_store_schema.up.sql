@@ -449,9 +449,9 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- calculate amount to pay
     -- TODO: verify how many rows this query returns. I have doubts
-    SELECT store.purchase_listing.quantity
+    SELECT SUM(store.purchase_listing.quantity
         * store.listing_product.quantity
-        * store.listing_product.price
+        * store.listing_product.price)
         AS total
     -- add total to new payment
     INTO NEW.amount
