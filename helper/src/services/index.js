@@ -39,15 +39,31 @@ schema names
     payment
   sales
     sale
+    sale_item
   website
     image
-    card
-    slide
-    banner
-    background
+      name
+      format
+      placeholder
     page
+      name UNIQUE
+      parent REFERENCES name nullable
+      UNIQUE(name, parent) // ensure parent page only has one child page named this
+      title
+      subtitle
+      banner (image)
+      background (image)
+    page_card
+      page
+      index
+      image
+      link_to (page)
+    page_slide
+      page
+      index
+      image
+      link_to (page)
   webstore
-    sale
     product
   hotel
     reservation

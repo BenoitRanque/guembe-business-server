@@ -96,6 +96,43 @@ services:
       - postgres
     volumes:
       - ./private/uploads:/usr/app/uploads
+  helper:
+    image: business-logic:prod
+    build:
+      context: ./business-logic
+      args:
+        NODE_ENV: production
+    command: node src/index.js
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      NODE_ENV: production
+      PGHOST: postgres
+      PGUSER: ${PG_USERNAME}
+      PGDATABASE: ${PG_DATABASE}
+      PGPASSWORD: ${PG_PASSWORD}
+      PGPORT: 5432
+      PUBLIC_HOSTNAME: ${PUBLIC_HOSTNAME}
+      FILE_UPLOAD_DIRECTORY: /usr/app/uploads
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      OAUTH_PROVIDER_FACEBOOK_CLIENT_ID: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_ID}
+      OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET}
+      OAUTH_PROVIDER_GOOGLE_CLIENT_ID: ${OAUTH_PROVIDER_GOOGLE_CLIENT_ID}
+      OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET: ${OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET}
+      KHIPU_CLIENT_ID: ${KHIPU_CLIENT_ID}
+      KHIPU_CLIENT_SECRET: ${KHIPU_CLIENT_SECRET}
+      IZI_CLIENT_ID: ${IZI_CLIENT_ID}
+      IZI_NIT_EMISOR: ${IZI_NIT_EMISOR}
+    # TODO: move secets to separate .env files, enable .env files per container. Unsure if doable
+    # env_file:
+    #   - ./private/.env
+    secrets:
+      - IZI_PUBLIC_KEY
+    depends_on:
+      - postgres
+    volumes:
+      - ./private/uploads:/usr/app/uploads
 secrets:
   IZI_PUBLIC_KEY:
     file: ./private/IZI_PUBLIC_KEY.pub

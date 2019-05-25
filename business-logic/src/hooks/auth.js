@@ -24,7 +24,8 @@ app.get('/', express.json(), async function (req, res) {
   res.status(200).json({
     'x-hasura-role': 'administrator',
     'x-hasura-user-id': '',
-    'x-hasura-username': 'admin'
+    'x-hasura-username': 'admin',
+    'x-hasura-now': new Date().toISOString()
   })
 })
 
