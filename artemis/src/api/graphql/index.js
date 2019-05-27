@@ -1,10 +1,19 @@
 const express = require('express')
 const proxy = require('http-proxy-middleware')
-const cookieMiddleware = require('../../utils/middlewares/cookie')
+const cookieParser = require('cookie-parser')
+const verifyCSRFToken = require('../../utils/middlewares/verifyCSRFToken')
 
 const app = express()
 
-app.use(cookieMiddleware, proxy({
+app.use(cookieParser())
+app.use(verifyCSRFToken)
+
+app.use(function (req, res, next) {
+  console.log('request to graphql')
+  next()
+})
+
+app.use(proxy({
   target: 'http://graphql-engine:6060/v1/graphql',
   // onProxyRes (proxyRes, req, res) {
   //   Object.keys(proxyRes.headers).forEach(function (key) {

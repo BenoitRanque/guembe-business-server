@@ -1,26 +1,21 @@
 const express = require('express')
+const CORSPolicy = require('../utils/middlewares/CORSPolicy')
+const setCSRFToken = require('../utils/middlewares/setCSRFToken')
+
 const app = express()
-const corser = require('corser')
 
-app.use(corser.create({
-  requestHeaders: corser.simpleRequestHeaders.concat(['Authorization']),
-  responseHeaders: corser.simpleResponseHeaders.concat([]),
-  supportsCredentials: true
-}))
+app.use(CORSPolicy)
+app.use(setCSRFToken)
 
-app.get('/test', function (req, res) {
-  res.setHeader('hello', 'world')
-  res.cookie('hello', 'world', {
-    httpOnly: false,
-    secure: false
-  })
-  res.status(200).json({ data: {} })
+// empty response. Header set by middleware above
+app.get('/csrftoken', function (req, res, next) {
+  res.status(204).end()
 })
 
 app.use('/auth', require('./auth'))
 app.use('/graphql', require('./graphql'))
-app.use('/hooks', require('./hooks'))
 app.use('/image', require('./image'))
+app.use('/hooks', require('./hooks'))
 
 module.exports = app
 
