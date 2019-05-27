@@ -1,16 +1,13 @@
 version: '3.7'
 services:
-  nginx:
-    volumes:
-      - ./public:/usr/share/nginx/html:ro
   postgres:
     volumes:
       - postgres:/var/lib/postgresql/data
   pgadmin:
     volumes:
       - pgadmin:/var/lib/pgadmin
-  business-logic:
-    image: business-logic:dev
+  artemis:
+    image: artemis:dev
     build:
       args:
         NODE_ENV: development
@@ -18,7 +15,7 @@ services:
     environment:
       NODE_ENV: development
     volumes:
-      - ./business-logic/src:/usr/app/src:ro
+      - ./artemis/src:/usr/app/src:ro
     # volumes:
     #   - type: bind
     #     source: ./business-logic/src/
