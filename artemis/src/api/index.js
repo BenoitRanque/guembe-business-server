@@ -9,16 +9,16 @@ express.request.db = db
 const app = express()
 
 app.use(CORSPolicy)
-app.use(setCSRFToken)
+// app.use(setCSRFToken)
 
-app.use(cookieParser(), function (req, res, next) {
-  console.log(req.cookies)
-  next()
-})
-// empty response. Header set by middleware above
-app.get('/csrftoken', function (req, res, next) {
-  res.status(204).end()
-})
+// app.use(cookieParser(), function (req, res, next) {
+//   console.log(req.cookies)
+//   next()
+// })
+// // empty response. Header set by middleware above
+// app.get('/csrftoken', function (req, res, next) {
+//   res.status(204).end()
+// })
 
 
 app.use('/auth', require('./auth'))

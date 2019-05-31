@@ -1,9 +1,8 @@
 const express = require('express')
 const cookieParser = require('cookie-parser')
-const verifyCSRFToken = require('../../utils/middlewares/verifyCSRFToken')
 const jwt = require('jsonwebtoken')
 const uuid = require('uuid/v4')
-const bodyParser = require('body-parser')
+const bcrypt = require('bcryptjs')
 const { ForbiddenError, NotFoundError } = require('../../utils/errors')
 
 const app = express()
@@ -401,47 +400,70 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
   }
 })
 
-app.post('/login', verifyCSRFToken, express.json(), function (req, res, next) {
+app.post('/login', express.json(), async function (req, res, next) {
   const { username, password } = req.body
 
-  if (username === 'admin' && password === 'admin') {
-    const session = {
-      // iss: '', // (Issuer)
-      // sub: '', // (Subject)
-      // aud: '', // (Audience)
-      // exp: '', // (Expiration Time)
-      // nbf: '', // (Not Before)
-      // iat: new Date().getTime(), // (Issued At)
-      jti: uuid(), // (JWT ID)
-      // custom claims
-      ses: {
-        usr: '', // user
-        rls: ['roles'], // roles
-        user_id: uuid(),
-        username: 'admin'
+  const query = `
+    SELECT user_id, username, password
+    FROM staff.user
+    WHERE username = $1
+  `
+  const { rows: [ user ] } = await req.db.query(query, [ username ])
+
+  if (user) {
+    const valid = await bcrypt.compare(password, user.password)
+    if (valid) {
+      const { user_id } = user
+      const query = `
+        SELECT role_name
+        FROM staff.user_role
+        LEFT JOIN staff.role ON (staff.user_role.role_id = staff.role.role_id)
+        WHERE user_id = $1
+      `
+      const { rows: roleRows } = await req.db.query(query, [user_id])
+
+      const roles = ['user']
+
+      if (roleRows.length) {
+        roles.push(...roleRows.map(({ role_name }) => role_name))
       }
+
+      const session = {
+        // iss: '', // (Issuer)
+        // sub: '', // (Subject)
+        // aud: '', // (Audience)
+        // exp: '', // (Expiration Time)
+        // nbf: '', // (Not Before)
+        // iat: new Date().getTime(), // (Issued At)
+        jti: uuid(), // (JWT ID)
+        // custom claims
+        ses: {
+          user_type: 'staff',
+          user_id,
+          roles
+        }
+      }
+      const token = jwt.sign(session, process.env.AUTH_JWT_SECRET, {
+        mutatePayload: true
+      })
+      const [ header, payload, signature ] = token.split('.')
+
+      res.cookie('session-auth', `${header}.${payload}`, {
+        httpOnly: false,
+        secure: true
+      })
+      res.cookie('session-key', signature, {
+        httpOnly: true,
+        secure: true
+      })
+
+      return res.status(200).send(`${header}.${payload}`)
     }
-    const token = jwt.sign(session, process.env.AUTH_JWT_SECRET, {
-      mutatePayload: true
-    })
-    const [ header, payload, signature ] = token.split('.')
-
-    res.cookie('session-auth', `${header}.${payload}`, {
-      httpOnly: false,
-      secure: true
-    })
-    res.cookie('session-key', signature, {
-      httpOnly: true,
-      secure: true
-    })
-
-    res.status(200).json(session)
-  } else {
-    next(new ForbiddenError())
   }
+  next(new ForbiddenError())
 })
 
-app.post('/logout', verifyCSRFToken, function (req, res, next) {
+app.post('/logout', function (req, res, next) {
   res.clearCookie('session-auth')
   res.clearCookie('session-key')
   res.status(200).json({})

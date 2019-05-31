@@ -1,12 +1,10 @@
 const express = require('express')
 const proxy = require('http-proxy-middleware')
 const cookieParser = require('cookie-parser')
-const verifyCSRFToken = require('../../utils/middlewares/verifyCSRFToken')
 
 const app = express()
 
 app.use(cookieParser())
-app.use(verifyCSRFToken)
 
 // app.use('/business-logic', require('./business-logic'))
 
