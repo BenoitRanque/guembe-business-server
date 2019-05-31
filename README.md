@@ -32,3 +32,18 @@ This powershell script will read multiple files and output them as one. Usefull 
 ```
 Get-ChildItem ./input/folder -include *.yaml -rec | ForEach-Object {gc $_; ""} | out-file ./output/file.txt -Append
 ```
+
+
+
+### obtaining certificates
+
+if setting up the project for the first time, you need to obtain cerficates to run the server
+but you need the server to obtain certificates.
+
+you can run a dedicated, small server for this.
+
+run
+
+```
+docker-compose up -f obtain-certificates.docker-compose.yml
+```

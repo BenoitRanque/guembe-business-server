@@ -8,13 +8,10 @@ const app = express()
 app.use(cookieParser())
 app.use(verifyCSRFToken)
 
-app.use(function (req, res, next) {
-  console.log('request to graphql')
-  next()
-})
+// app.use('/business-logic', require('./business-logic'))
 
 app.use(proxy({
-  target: 'http://graphql-engine:6060/v1/graphql',
+  target: 'http://graphql-engine:8080/v1/graphql',
   // onProxyRes (proxyRes, req, res) {
   //   Object.keys(proxyRes.headers).forEach(function (key) {
   //     res.append(key, proxyRes.headers[key])

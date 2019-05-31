@@ -1,0 +1,20 @@
+# production configuration. See docker-compose.override.yml from development specific configurations
+version: '3.7'
+services:
+  # simple static server for acme challenge
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    restart: unless-stoped
+    volumes:
+      - ./public/certbot:/usr/share/nginx/html
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/public/certbot:/usr/share/nginx/html
+    depends_on:
+      - nginx
+    command: certonly --webroot --webroot-path=/usr/share/nginx/html --email ranque.benoit@gmail.com --agree-tos --no-eff-email --force-renewal -d chuturubi.com  -d www.chuturubi.com

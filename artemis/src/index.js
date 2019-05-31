@@ -1,12 +1,12 @@
 const express = require('express')
-// const { sessionMiddleware } = require('./utils/session')
-// const db = require('./utils/db')
+const helmet = require('helmet')
 
-// express.request.db = db
+const port = 8080
+
 const app = express()
-const port = 9090
 
-// app.use(sessionMiddleware)
+app.use(helmet())
+
 app.use('/api/v1', require('./api'))
 
 app.listen({ port }, () => {

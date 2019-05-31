@@ -54,7 +54,7 @@ app.use(cookieParser())
 //   // it should be httpOnly (not readable by javascript) and encrypted.
 //   res.cookie('openid-nonce', nonce, {
 //     httpOnly: true,
-//     secure: false,
+//     secure: true,
 //     maxAge: 5 * 60 * 1000 // 5 minutes
 //   })
 
@@ -103,87 +103,305 @@ app.use(cookieParser())
 const qs = require('querystring')
 const axios = require('axios')
 
+
+function encodeState (state) {
+  return Buffer.from(JSON.stringify(state)).toString('base64')
+}
+
+function decodeState (state) {
+  return JSON.parse(Buffer.from(state, 'base64').toString())
+}
+
+async function loadClientAccount (clientAuth, db) {
+  const query = `
+    SELECT client_id, name, email, first_name, middle_name, last_name, authentication_provider_name
+    FROM store.client
+    WHERE authentication_provider_name = $1
+    AND authentication_provider_account_id = $2
+  `
+  const { rows: [ client ] } = await db.query(query, [
+    clientAuth.authentication_provider_name,
+    clientAuth.authentication_provider_account_id
+  ])
+
+  return client ? client : null
+}
+
+async function createClientAccount (clientAuth, db) {
+  const query = `
+    INSERT INTO store.client
+      (name, email, first_name, middle_name, last_name, authentication_provider_name, authentication_provider_account_id)
+    VALUES
+      ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING
+      client_id, name, email, first_name, middle_name, last_name, authentication_provider_name
+  `
+
+  // order here must be same as above. Be careful
+  const { rows: [ client ] } = await db.query(query, [
+    clientAuth.name,
+    clientAuth.email,
+    clientAuth.first_name,
+    clientAuth.middle_name,
+    clientAuth.last_name,
+    clientAuth.authentication_provider_name,
+    clientAuth.authentication_provider_account_id
+  ])
+
+  return client
+}
+
+function getClientSession (clientAccount) {
+  const { client_id } = clientAccount
+
+  return {
+    user_type: 'client',
+    user_id: client_id,
+    roles: ['client']
+  }
+}
+
+function setSessionCookie (session, res) {
+  const token = jwt.sign({
+    // iss: '', // (Issuer)
+    // sub: '', // (Subject)
+    // aud: '', // (Audience)
+    // exp: '', // (Expiration Time)
+    // nbf: '', // (Not Before)
+    // iat: new Date().getTime(), // (Issued At)
+    jti: uuid(), // (JWT ID)
+    // custom claims
+    ses: session
+  }, process.env.AUTH_JWT_SECRET, {
+    // mutatePayload: true // enable to mutate the payload (first parameter)
+  })
+  const [ header, payload, signature ] = token.split('.')
+
+  res.cookie('session-auth', `${header}.${payload}`, {
+    httpOnly: false,
+    secure: true
+  })
+  res.cookie('session-key', signature, {
+    httpOnly: true,
+    secure: true
+  })
+}
+
 class OAuth2 {
   constructor ({
+    name,
     clientId,
     clientSecret,
     authenticationEndpoint,
-    additionalAuthenticationParameters,
+    verificationEndpoint,
+    verificationMethod = 'GET',
+    resourceEndpoint,
     scope,
+    fields,
+    parseFields = fields => fields,
   }) {
+    this.name = name
     this.clientId = clientId
     this.clientSecret = clientSecret
     this.authenticationEndpoint = authenticationEndpoint
-    this.additionalAuthenticationParameters = additionalAuthenticationParameters
+    this.verificationEndpoint = verificationEndpoint
+    this.verificationMethod = verificationMethod
+    this.resourceEndpoint = resourceEndpoint
     this.scope = scope
+    this.fields = fields
+    this.parseFields = parseFields
   }
-  getAuthenticationURL (redirectURL, state) {
+
+  getRedirectUri () {
+    return `https://${process.env.PUBLIC_HOSTNAME}/api/v1/auth/oauth/${this.name}/callback`
+  }
+
+  getAuthenticationURL (state) {
     const query = qs.stringify({
       client_id: this.clientId,
       response_type: 'code',
-      redirect_uri: redirectURL,
+      redirect_uri: this.getRedirectUri(),
       scope: this.scope,
-      state: Buffer.from(JSON.stringify(state)).toString('base64'),
-      ...this.additionalAuthenticationParameters
+      state: encodeState(state)
     })
 
     return `${this.authenticationEndpoint}?${query}`
   }
 
-  async handleCallback (code, xsrfToken) {
+  async getAccessToken(code) {
+    const { data: { access_token } } = await axios({
+      method: this.verificationMethod,
+      url: this.verificationEndpoint,
+      params: {
+        code,
+        grant_type: 'authorization_code',
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        redirect_uri: this.getRedirectUri()
+      }
+    })
 
+    return access_token
   }
 
+  async getClientAuth (access_token) {
+    const { data: fields  } = await axios({
+      method: 'GET',
+      url: this.resourceEndpoint,
+      params: {
+        access_token,
+        fields: this.fields
+      }
+    })
+
+    return this.parseFields(fields)
+  }
 }
 
 const google = new OAuth2({
+  name: 'google',
   clientId: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_ID,
   clientSecret: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET,
   authenticationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  verificationEndpoint: 'https://www.googleapis.com/oauth2/v4/token',
+  verificationMethod: 'POST',
+  resourceEndpoint: 'https://www.googleapis.com/oauth2/v1/userinfo',
   scope: 'profile email',
-  additionalAuthenticationParameters: {
+  fields: 'id,name,email,given_name,family_name',
+  parseFields (fields) {
+    const { id, name, email, given_name, family_name } = fields
+    let first_name = '', middle_name = ''
+    if (given_name && given_name.length) {
+      let namesArr = given_name.split(' ')
+      if (namesArr.length) {
+        first_name = namesArr[0]
+        if (namesArr.length >= 2) {
+          middle_name = namesArr.slice(1).join(' ')
+        }
+      }
+    }
+
+    return {
+      authentication_provider_name: 'google',
+      authentication_provider_account_id: id,
+      name: name ? name : '',
+      email: email ? email : '',
+      first_name: first_name ? first_name : '',
+      middle_name: middle_name ? middle_name : '',
+      last_name: family_name ? family_name : ''
+    }
   }
 })
+
 const facebook = new OAuth2({
-  clientId: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_ID,
-  clientSecret: process.env.OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET,
-  authenticationEndpoint: 'https://www.facebook.com/v3.2/dialog/oauth',
+  name: 'facebook',
+  clientId: process.env.OAUTH_PROVIDER_FACEBOOK_CLIENT_ID,
+  clientSecret: process.env.OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET,
+  authenticationEndpoint: 'https://www.facebook.com/v3.3/dialog/oauth',
+  verificationEndpoint: 'https://graph.facebook.com/v3.3/oauth/access_token',
+  verificationMethod: 'GET',
+  resourceEndpoint: 'https://graph.facebook.com/me',
   scope: 'email',
-  additionalAuthenticationParameters: {
-    display: 'touch'
+  fields: 'id,name,email,first_name,last_name,middle_name',
+  parseFields (fields) {
+    const { id, name, email, first_name, middle_name, last_name } = fields
+
+    return {
+      authentication_provider_name: 'facebook',
+      authentication_provider_account_id: id,
+      name: name ? name : '',
+      email: email ? email : '',
+      first_name: first_name ? first_name : '',
+      middle_name: middle_name ? middle_name : '',
+      last_name: last_name ? last_name : ''
+    }
   }
 })
 
+app.get('/oauth/:provider', async function (req, res, next) {
+  const xsrfToken = uuid()
 
-app.get('/authenticate/:provider', async function (req, res, next) {
-  const callbackURL = 'http://localhost:9090/api/v1/auth/callback'
+  res.cookie('XSRF-TOKEN-OAUTH', xsrfToken, {
+    httpOnly: true,
+    secure: true,
+    maxAge: 5 * 60 * 1000 // 5 minutes max to login
+  })
+
   const state = {
-    xsrfToken : uuid(),
+    xsrfToken,
     clientState: req.query
   }
 
-  switch (req.params.provider) {
-    case 'google':
-      res.redirect(google.getAuthenticationURL(callbackURL, state))
-      break
-    case 'facebook':
-      res.redirect(facebook.getAuthenticationURL(callbackURL, state))
-      break
-    default:
-      next(new NotFoundError())
+  try {
+    switch (req.params.provider) {
+      case 'google':
+        {
+          res.redirect(google.getAuthenticationURL(state))
+        }
+        break
+      case 'facebook':
+        {
+          res.redirect(facebook.getAuthenticationURL(state))
+        }
+        break
+      default:
+        next(new NotFoundError())
+    }
+  } catch (error) {
+    next(error)
   }
 })
 
-app.get('/callback', express.urlencoded({ extended: false }), async function (req, res, next) {
-  console.log(req.query)
-  console.log(req.body)
-  google.handleCallback(code)
+app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), async function (req, res, next) {
+  const state = decodeState(req.query.state)
 
+  const stateToken = state.xsrfToken
+  const cookieToken = req.cookies['XSRF-TOKEN-OAUTH']
 
-  res.redirect('http://localhost:8080/')
+  // check if xsrftoken matches
+  if (!stateToken || stateToken !== cookieToken) {
+    return next(new BadRequestError())
+  }
+
+  let clientAuth = null
+  let clientAccount = null
+
+  try {
+    switch (req.params.provider) {
+      case 'google':
+        {
+          const access_token = await google.getAccessToken(req.query.code)
+          clientAuth = await google.getClientAuth(access_token)
+        }
+        break
+      case 'facebook':
+        {
+          const access_token = await facebook.getAccessToken(req.query.code)
+          clientAuth = await facebook.getClientAuth(access_token)
+        }
+        break
+      default:
+        return next(new NotFoundError())
+    }
+
+    clientAccount = await loadClientAccount(clientAuth, req.db)
+    if (clientAccount === null) {
+      clientAccount = await createClientAccount(clientAuth, req.db)
+    }
+
+    const session = getClientSession(clientAccount)
+
+    setSessionCookie(session, res)
+
+    // todo: send client state back as query params
+    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
+  } catch (error) {
+    console.log('error in callback')
+    next(error)
+  }
 })
 
-app.post('/authenticate', verifyCSRFToken, express.json(), function (req, res, next) {
+app.post('/login', verifyCSRFToken, express.json(), function (req, res, next) {
   const { username, password } = req.body
 
   if (username === 'admin' && password === 'admin') {
@@ -206,29 +424,28 @@ app.post('/authenticate', verifyCSRFToken, express.json(), function (req, res, n
     const token = jwt.sign(session, process.env.AUTH_JWT_SECRET, {
       mutatePayload: true
     })
-    console.log(session)
     const [ header, payload, signature ] = token.split('.')
 
     res.cookie('session-auth', `${header}.${payload}`, {
       httpOnly: false,
-      secure: false
+      secure: true
     })
     res.cookie('session-key', signature, {
       httpOnly: true,
-      secure: false
+      secure: true
     })
 
-    res.status(200).json({
-      user: {
-        username: 'admin',
-        id: 1
-      }
-    })
+    res.status(200).json(session)
   } else {
     next(new ForbiddenError())
   }
 })
 
+app.post('/logout', verifyCSRFToken, function (req, res, next) {
+  res.clearCookie('session-auth')
+  res.clearCookie('session-key')
+  res.status(200).json({})
+})
 
 function buildQueryString (query) {
   return Object.keys(query)
@@ -238,10 +455,6 @@ function buildQueryString (query) {
 
 function buildUrl (baseURL, query) {
   return `${baseURL}?${buildQueryString(query)}`
-}
-
-function getJoule (mass, distance, time) {
-  return mass * (distance / time)
 }
 
 module.exports = app

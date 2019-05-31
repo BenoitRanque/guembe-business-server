@@ -1,11 +1,7 @@
 const express = require('express')
 const app = express()
 
-app.use(function (req, res, next) {
-  console.log('calling hasura webhook')
-  next()
-})
-
 app.use('/auth', require('./auth'))
+app.use('/event', require('./event'))
 
 module.exports = app

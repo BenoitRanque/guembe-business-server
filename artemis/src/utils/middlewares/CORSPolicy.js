@@ -4,6 +4,7 @@ const corser = require('corser')
 // Set headers required for cross origin requests
 
 module.exports = corser.create({
+  // origins: ['https://chuturubi.com'],
   requestHeaders: corser.simpleRequestHeaders.concat(['Authorization', 'X-XSRF-TOKEN']),
   responseHeaders: corser.simpleResponseHeaders.concat(['']),
   supportsCredentials: true
