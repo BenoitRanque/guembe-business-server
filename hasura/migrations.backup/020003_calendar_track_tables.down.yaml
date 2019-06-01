@@ -1,0 +1,20 @@
+- args:
+    table:
+      name: holiday
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
+      name: lifetime
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
+      name: lifetime_weekday
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
+      name: weekday
+      schema: calendar
+  type: untrack_table

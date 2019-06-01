@@ -1,0 +1,365 @@
+- args:
+    relationship: purchases
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: authentication_provider
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: clients
+    table:
+      name: authentication_provider
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: created_by_user
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: updated_by_user
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing_products
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase_listings
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: lifetime
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: product
+    table:
+      name: listing_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: created_by_user
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: updated_by_user
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing_products
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchased_products
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: client
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: invoices
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: payment
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchased_products
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing
+    table:
+      name: purchase_listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase
+    table:
+      name: purchase_listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: lifetime
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: product
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchased_product_uses
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: created_by_user
+    table:
+      name: purchased_product_use
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchased_product
+    table:
+      name: purchased_product_use
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: updated_by_user
+    table:
+      name: purchased_product_use
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase_listings
+    table:
+      name: purchase
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: purchase
+    table:
+      name: invoice
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: payment_status
+    table:
+      name: payment
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: invoices
+    table:
+      name: economic_activity
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: products
+    table:
+      name: economic_activity
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: economic_activity
+    table:
+      name: invoice
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: economic_activity
+    table:
+      name: product
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: available_listing
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing
+    table:
+      name: available_listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: client
+    table:
+      name: cart_listing
+      schema: store
+  type: drop_relationship
+
+- args:
+    relationship: listing
+    table:
+      name: cart_listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: cart_listings
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: cart_listings
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: listing_stock
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing_stock
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: payments
+    table:
+      name: payment_status
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: created_by_user
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: updated_by_user
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: listing_image
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing_images
+    table:
+      name: listing
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client
+    table:
+      name: client_token
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client_tokens
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_products
+    table:
+      name: client
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_product
+    table:
+      name: purchased_product_usable
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: client
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: purchased_product_usable
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship
+- args:
+    relationship: listing
+    table:
+      name: purchased_product
+      schema: store
+  type: drop_relationship

@@ -1,0 +1,3 @@
+- args:
+    name: store_listing_image_delete
+  type: delete_event_trigger

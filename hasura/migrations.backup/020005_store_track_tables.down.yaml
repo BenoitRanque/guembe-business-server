@@ -1,0 +1,95 @@
+- args:
+    table:
+      name: authentication_provider
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: client
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: invoice
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: available_listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: listing_product
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: payment
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: product
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchase
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchase_listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchased_product
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchased_product_use
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: economic_activity
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: payment_status
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: cart_listing
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: listing_stock
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: listing_image
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: client_token
+      schema: store
+  type: untrack_table
+- args:
+    table:
+      name: purchased_product_usable
+      schema: store
+  type: untrack_table

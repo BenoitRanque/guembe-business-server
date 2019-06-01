@@ -1,0 +1,12 @@
+- args:
+    name: user
+    schema: staff
+  type: add_existing_table_or_view
+- args:
+    name: user_role
+    schema: staff
+  type: add_existing_table_or_view
+- args:
+    name: role
+    schema: staff
+  type: add_existing_table_or_view
