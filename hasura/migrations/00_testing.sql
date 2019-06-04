@@ -239,6 +239,11 @@ CREATE TABLE calendar.lifetime_weekday (
 
 CREATE SCHEMA accounting;
 
+-- cycle
+-- create sale
+-- from sale auto generate documentet that are not the final ones
+
+
 CREATE TABLE accounting.invoice;
 CREATE TABLE accounting.economic_activity;
 CREATE TABLE accounting.invoice_authorization;
@@ -282,8 +287,10 @@ CREATE TABLE website.image_format_size (
 
 CREATE TABLE website.page (
     page_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    path TEXT UNIQUE NOT NULL,
 	name TEXT NOT NULL
 );
+
 
 CREATE TABLE website.page_i18n (
 	page_id UUID REFERENCES website.page (page_id) ON DELETE CASCADE,
@@ -296,6 +303,47 @@ CREATE TABLE website.page_i18n (
 	body TEXT
 );
 
+CREATE TABLE website.slide_i18n (
+    page_id
+    locale_id
+    index
+    PRIMARY KEY (page_id, locale_id, index)
+    image_id
+);
+
+CREATE TABLE website.section (
+    section_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	page_id UUID NOT NULL REFERENCES website.page (page_id) ON DELETE CASCADE,
+    index INTEGER NOT NULL CHECK (index >= 0),
+    UNIQUE(page_id, index)
+);
+
+CREATE TABLE website.size (
+    size_id TEXT PRIMARY KEY
+);
+INSERT INTO website.size (size_id)
+VALUES ('xl'), ('lg'), ('md'), ('sm'), ('xs');
+
+CREATE TABLE website.element (
+    element_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    section_id UUID REFERENCES website.page (section_id)
+        ON DELETE CASCADE,
+    index INTEGER NOT NULL CHECK (index >= 0),
+    UNIQUE (section_id, index),
+    size_id TEXT NOT NULL REFERENCES website.size (size_id),
+    image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
+    target TEXT
+);
+
+CREATE TABLE website.element_i18n (
+	element_id UUID REFERENCES website.page (element_id) ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (element_id, locale_id),
+    caption TEXT,
+    title TEXT,
+    subtitle TEXT,
+	body TEXT
+);
 
 CREATE SCHEMA webstore;
 
@@ -309,26 +357,30 @@ CREATE TABLE webstore.aquired_product;
 CREATE TABLE webstore.aquired_product_use;
 CREATE TABLE webstore.cart_listing;
 
-CREATE SCHEMA hotel;
+-- CREATE SCHEMA hotel;
 
-CREATE TABLE hotel.room_type;
-CREATE TABLE hotel.room;
-CREATE TABLE hotel.room_i18n;
--- reference room type, calendar lifetime. set price
--- like webstore listing, define availability of this price
--- consider percentage price that must be paid upfront, percentage that can be refunded
-CREATE TABLE hotel.listing;
-CREATE TABLE hotel.reservation;
-CREATE TABLE hotel.cancellation; -- link to partial payment cancellation here
-CREATE TABLE hotel.booking; -- link to partial payment cancellation here
-CREATE TABLE hotel.reservation_guest;
-CREATE TABLE hotel.guest;
-CREATE TABLE hotel.guest_room;
-CREATE TABLE hotel.checkin;
-CREATE TABLE hotel.checkin_client;
-CREATE TABLE hotel.checkout;
-CREATE TABLE hotel.checkout_client;
--- ask management: do we want fixed products for additial charges, or just manually fill
-CREATE TABLE hotel.additional;
+-- CREATE TABLE hotel.room_type;
+-- CREATE TABLE hotel.room;
+-- CREATE TABLE hotel.room_i18n;
+-- -- reference room type, calendar lifetime. set price
+-- -- like webstore listing, define availability of this price
+-- -- consider percentage price that must be paid upfront, percentage that can be refunded
+-- CREATE TABLE hotel.listing;
+-- CREATE TABLE hotel.reservation;
+-- CREATE TABLE hotel.cancellation; -- link to partial payment cancellation here
+-- CREATE TABLE hotel.booking; -- link to partial payment cancellation here
+-- CREATE TABLE hotel.reservation_guest;
+-- CREATE TABLE hotel.guest;
+-- CREATE TABLE hotel.guest_room;
+-- CREATE TABLE hotel.ocupancy;
+-- CREATE TABLE hotel.ocupancy;
+-- CREATE TABLE hotel.checkin;
+-- CREATE TABLE hotel.checkin_client;
+-- CREATE TABLE hotel.checkout;
+-- CREATE TABLE hotel.checkout_client;
+-- -- ask management: do we want fixed products for additial charges, or just manually fill
+-- CREATE TABLE hotel.additional;
+
+-- -- separate reservation from room ocupancy. Reservation is fixed, occupancy can change
 
 COMMIT;
