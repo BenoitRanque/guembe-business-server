@@ -256,7 +256,7 @@ CREATE TABLE accounting.payment_refund;
 CREATE TABLE accounting.payment_completion;
 CREATE TABLE accounting.payment_cancellation;
 
-CREATE TABLE accounting.sale; -- join point for diferent types of sale.
+-- CREATE TABLE accounting.sale; -- join point for diferent types of sale.
 
 CREATE SCHEMA website;
 
@@ -291,24 +291,18 @@ CREATE TABLE website.page (
 	name TEXT NOT NULL
 );
 
-
-CREATE TABLE website.page_i18n (
-	page_id UUID REFERENCES website.page (page_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	PRIMARY KEY (page_id, locale_id),
-    background_image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
-    banner_image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
-    title TEXT,
-    subtitle TEXT,
-	body TEXT
+CREATE TABLE website.slide (
+    slide_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    page_id UUID NOT NULL REFERENCES website.page (page_id) ON DELETE CASCADE,
+    index INTEGER NOT NULL CHECK (indec >= 0),
+    UNIQUE (page_id, index)
 );
 
 CREATE TABLE website.slide_i18n (
-    page_id
-    locale_id
-    index
-    PRIMARY KEY (page_id, locale_id, index)
-    image_id
+    slide_id UUID REFERENCES website.slide (slide_id),
+	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (slide_id, locale_id),
+    image_id UUID NOT NULL REFERENCES website.image (image_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE website.section (
@@ -326,7 +320,7 @@ VALUES ('xl'), ('lg'), ('md'), ('sm'), ('xs');
 
 CREATE TABLE website.element (
     element_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    section_id UUID REFERENCES website.page (section_id)
+    section_id UUID NOT NULL REFERENCES website.page (section_id)
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
     UNIQUE (section_id, index),
@@ -352,6 +346,7 @@ CREATE TABLE webstore.product_i18n;
 CREATE TABLE webstore.listing;
 CREATE TABLE webstore.listing_i18n;
 CREATE TABLE webstore.listing_product;
+CREATE TABLE webstore.sale; -- references accounting.sale
 CREATE TABLE webstore.sale_listing; -- references accounting.sale
 CREATE TABLE webstore.aquired_product;
 CREATE TABLE webstore.aquired_product_use;
