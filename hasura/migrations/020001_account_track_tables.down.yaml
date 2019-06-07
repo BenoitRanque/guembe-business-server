@@ -1,0 +1,30 @@
+- args:
+    table:
+      name: client
+      schema: account
+  type: untrack_table
+- args:
+    table:
+      name: oauth_provider
+      schema: account
+  type: untrack_table
+- args:
+    table:
+      name: role
+      schema: account
+  type: untrack_table
+- args:
+    table:
+      name: token
+      schema: account
+  type: untrack_table
+- args:
+    table:
+      name: user
+      schema: account
+  type: untrack_table
+- args:
+    table:
+      name: user_role
+      schema: account
+  type: untrack_table

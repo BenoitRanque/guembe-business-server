@@ -1,0 +1,6 @@
+- args:
+    role: client
+    table:
+      name: client
+      schema: account
+  type: drop_update_permission

@@ -1,0 +1,44 @@
+- args:
+    name: element
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: element_i18n
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: image
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: image_format
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: image_format_size
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: page
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: page_i18n
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: section
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: size
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: slide
+    schema: website
+  type: add_existing_table_or_view
+- args:
+    name: slide_i18n
+    schema: website
+  type: add_existing_table_or_view

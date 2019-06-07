@@ -1,0 +1,24 @@
+- args:
+    name: economic_activity
+    schema: accounting
+  type: add_existing_table_or_view
+- args:
+    name: invoice
+    schema: accounting
+  type: add_existing_table_or_view
+- args:
+    name: invoice_item
+    schema: accounting
+  type: add_existing_table_or_view
+- args:
+    name: payment
+    schema: accounting
+  type: add_existing_table_or_view
+- args:
+    name: payment_status
+    schema: accounting
+  type: add_existing_table_or_view
+- args:
+    name: payment_update
+    schema: accounting
+  type: add_existing_table_or_view

@@ -1,0 +1,70 @@
+- args:
+    table:
+      name: aquired_product
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: aquired_product_usable
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: aquired_product_use
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: cart_listing
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: inventory
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: listing
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: listing_i18n
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: listing_product
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: product
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: product_i18n
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: sale
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: sale_invoice
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: sale_listing
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: sale_payment
+      schema: webstore
+  type: untrack_table

@@ -127,7 +127,9 @@ VALUES ('es'), ('en');
 
 CREATE TABLE i18n.message (
 	message_id UUID DEFAULT gen_random_uuid(),
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(message_id, locale_id),
 	body TEXT,
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -147,8 +149,11 @@ INSERT INTO calendar.weekday (weekday_id)
 VALUES (0), (1), (2), (3), (4), (5), (6);
 
 CREATE TABLE calendar.weekday_i18n (
-    weekday_id INTEGER REFERENCES calendar.weekday (weekday_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    weekday_id INTEGER REFERENCES calendar.weekday (weekday_id)
+        ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(weekday_id, locale_id),
     name TEXT NOT NULL
 );
@@ -182,8 +187,11 @@ CREATE TRIGGER calendar_holiday_set_updated_at BEFORE UPDATE ON calendar.holiday
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE calendar.holiday_i18n (
-    holiday_id UUID REFERENCES calendar.holiday (holiday_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    holiday_id UUID REFERENCES calendar.holiday (holiday_id)
+        ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(holiday_id, locale_id),
     name TEXT,
     description TEXT,
@@ -211,8 +219,11 @@ CREATE TRIGGER calendar_lifetime_set_updated_at BEFORE UPDATE ON calendar.lifeti
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE calendar.lifetime_i18n (
-    lifetime_id UUID REFERENCES calendar.lifetime (lifetime_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    lifetime_id UUID REFERENCES calendar.lifetime (lifetime_id)
+        ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(lifetime_id, locale_id),
     name TEXT NOT NULL,
     description TEXT,
@@ -281,7 +292,7 @@ CREATE TABLE accounting.invoice_item (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
-CREATE TRIGGER accounting_invoice_set_updated_at BEFORE UPDATE ON accounting.invoice
+CREATE TRIGGER accounting_invoice_item_set_updated_at BEFORE UPDATE ON accounting.invoice_item
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE accounting.payment_status (
@@ -301,7 +312,8 @@ CREATE TABLE accounting.payment (
     amount INTEGER NOT NULL CHECK (amount > 0),
     status TEXT NOT NULL REFERENCES accounting.payment_status (payment_status_id)
         ON UPDATE RESTRICT
-        ON DELETE RESTRICT,
+        ON DELETE RESTRICT
+        DEFAULT 'PENDING',
     -- khipu payment data goes here
     khipu_payment_id TEXT, -- (String) Identificador único del pago, es una cadena alfanumérica de 12 caracteres
     khipu_payment_url TEXT, -- (String) URL principal del pago, si el usuario no ha elegido previamente un método de pago se le muestran las opciones
@@ -432,7 +444,8 @@ CREATE TRIGGER website_page_set_updated_at BEFORE UPDATE ON website.page
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE website.page_i18n (
-    page_id UUID REFERENCES website.slide (slide_id),
+    page_id UUID REFERENCES website.page (page_id)
+        ON DELETE CASCADE,
 	locale_id TEXT REFERENCES i18n.locale(locale_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
@@ -461,7 +474,8 @@ CREATE TRIGGER website_slide_set_updated_at BEFORE UPDATE ON website.slide
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE website.slide_i18n (
-    slide_id UUID REFERENCES website.slide (slide_id),
+    slide_id UUID REFERENCES website.slide (slide_id)
+        ON DELETE CASCADE,
 	locale_id TEXT REFERENCES i18n.locale(locale_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
@@ -487,7 +501,7 @@ CREATE TABLE website.section (
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
 );
-CREATE TRIGGER website_image_set_updated_at BEFORE UPDATE ON website.image
+CREATE TRIGGER website_section_set_updated_at BEFORE UPDATE ON website.section
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE website.element (
@@ -508,7 +522,8 @@ CREATE TRIGGER website_element_set_updated_at BEFORE UPDATE ON website.element
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE website.element_i18n (
-	element_id UUID REFERENCES website.element (element_id) ON DELETE CASCADE,
+	element_id UUID REFERENCES website.element (element_id)
+        ON DELETE CASCADE,
 	locale_id TEXT REFERENCES i18n.locale(locale_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
@@ -541,8 +556,11 @@ CREATE TRIGGER webstore_product_set_updated_at BEFORE UPDATE ON webstore.product
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE webstore.product_i18n (
-    product_id UUID REFERENCES webstore.product (product_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    product_id UUID REFERENCES webstore.product (product_id)
+        ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(product_id, locale_id),
     name TEXT,
     description TEXT,
@@ -561,7 +579,7 @@ CREATE TABLE webstore.listing (
     available_from DATE NOT NULL, -- when this will be available in webstore
     available_to DATE NOT NULL,
     CHECK (available_from <= available_to),
-    available_stock INTEGER CHECK (available_stock IS NULL OR available_stock > 0),
+    supply INTEGER CHECK (supply IS NULL OR supply > 0),
     total INTEGER NOT NULL CHECK (total >= 0),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -572,8 +590,11 @@ CREATE TRIGGER webstore_listing_set_updated_at BEFORE UPDATE ON webstore.listing
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE webstore.listing_i18n (
-    listing_id UUID REFERENCES webstore.listing (listing_id) ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    listing_id UUID REFERENCES webstore.listing (listing_id)
+        ON DELETE CASCADE,
+	locale_id TEXT REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 	PRIMARY KEY(listing_id, locale_id),
     name TEXT,
     description TEXT,
@@ -582,7 +603,7 @@ CREATE TABLE webstore.listing_i18n (
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
     updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
 );
-CREATE TRIGGER webstore_webstore_set_updated_at BEFORE UPDATE ON webstore.webstore
+CREATE TRIGGER webstore_listing_i18n_set_updated_at BEFORE UPDATE ON webstore.listing_i18n
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE webstore.listing_product (
@@ -687,44 +708,122 @@ CREATE TABLE webstore.cart_listing (
 CREATE TRIGGER webstore_cart_listing_set_updated_at BEFORE UPDATE ON webstore.cart_listing
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE VIEW webstore.listing_stock AS
+CREATE VIEW webstore.inventory AS
 SELECT
     webstore.listing.listing_id AS listing_id,
-    webstore.listing.available_stock AS available_stock,
-    COALESCE(SUM(webstore.sale_listing.quantity), 0) AS used_stock,
-    available_stock - COALESCE(SUM(webstore.sale_listing.quantity), 0) AS remaining_stock
+    webstore.listing.supply AS supply,
+    COALESCE(SUM(webstore.sale_listing.quantity), 0) AS used,
+    webstore.listing.supply - COALESCE(SUM(webstore.sale_listing.quantity), 0) AS remaining,
+    ((webstore.listing.supply - COALESCE(SUM(webstore.sale_listing.quantity), 0)) > 0)::text AS available
 FROM webstore.listing
-LEFT JOIN webstore.sale_listing ON webstore.listing.listing_id = webstore.sale_listing.listing_id
-    AND webstore.sale_listing.sale_id NOT IN
-        (SELECT webstore.payment.sale_id FROM webstore.payment WHERE webstore.payment.status NOT IN ('PENDING', 'COMPLETED'))
-WHERE webstore.listing.available_stock IS NOT NULL
-GROUP BY webstore.listing.listing_id, webstore.listing.available_stock;
+LEFT JOIN webstore.sale_listing
+    ON webstore.listing.listing_id = webstore.sale_listing.listing_id
+    AND webstore.sale_listing.sale_id IN (
+        SELECT webstore.sale_payment.sale_id
+        FROM webstore.sale_payment
+        LEFT JOIN accounting.payment
+            ON webstore.sale_payment.payment_id = accounting.payment.payment_id
+        WHERE accounting.payment.status IN ('PENDING', 'COMPLETED')
+    )
+WHERE webstore.listing.supply IS NOT NULL
+GROUP BY webstore.listing.listing_id, webstore.listing.supply;
 
-CREATE VIEW webstore.available_listing AS
+CREATE VIEW webstore.aquired_product_usable AS
 SELECT
-    webstore.listing.listing_id,
-    webstore.listing.public_name,
-    webstore.listing.description
-FROM webstore.listing
-WHERE webstore.listing.available_from <= NOW() AND webstore.listing.available_to >= NOW()
-ORDER BY webstore.listing.created_at DESC;
-
-CREATE VIEW webstore.saled_product_usable AS
-SELECT
-    webstore.saled_product.saled_product_id
-FROM webstore.saled_product
-LEFT JOIN calendar.lifetime ON webstore.saled_product.lifetime_id = calendar.lifetime.lifetime_id
+    webstore.aquired_product.aquired_product_id
+FROM webstore.aquired_product
+LEFT JOIN calendar.lifetime ON webstore.aquired_product.lifetime_id = calendar.lifetime.lifetime_id
 LEFT JOIN calendar.lifetime_weekday ON calendar.lifetime.lifetime_id = calendar.lifetime_weekday.lifetime_id AND calendar.lifetime_weekday.weekday_id = EXTRACT(DOW FROM now())::int
 LEFT JOIN calendar.holiday ON calendar.holiday.date = CURRENT_DATE
 WHERE now() >= calendar.lifetime.start AND now() <= calendar.lifetime.end
-AND webstore.saled_product.saled_product_id NOT IN (SELECT webstore.saled_product_use.saled_product_id FROM webstore.saled_product_use WHERE webstore.saled_product_use.cancelled = false)
+AND webstore.aquired_product.aquired_product_id NOT IN (SELECT webstore.aquired_product_use.aquired_product_id FROM webstore.aquired_product_use WHERE webstore.aquired_product_use.cancelled = false)
 AND ((
     calendar.holiday.date IS NULL AND calendar.lifetime_weekday.weekday_id IS NOT NULL
 ) OR (
     calendar.holiday.date IS NOT NULL AND calendar.lifetime.include_holidays = true
 ));
 
+CREATE FUNCTION webstore.protect_sale_listing()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS(
+        SELECT 1 FROM webstore.sale_listing
+        WHERE webstore.sale_listing.listing_id = COALESCE(NEW.listing_id, OLD.listing_id)
+    ) THEN
+        RAISE EXCEPTION 'Modifying a listing already in a sale is not allowed';
+    END IF;
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ language 'plpgsql';
 
+CREATE TRIGGER webstore_listing_protect_sale_listing
+    BEFORE UPDATE OR DELETE ON webstore.listing
+    FOR EACH ROW EXECUTE FUNCTION webstore.protect_sale_listing();
 
+CREATE TRIGGER webstore_listing_product_protect_sale_listing
+    BEFORE INSERT OR UPDATE OR DELETE ON webstore.listing_product
+    FOR EACH ROW EXECUTE FUNCTION webstore.protect_sale_listing();
+
+CREATE FUNCTION webstore.protect_paid_sale()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS(
+        SELECT 1 FROM webstore.sale_payment
+        WHERE webstore.sale_payment.sale_id = COALESCE(NEW.sale_id, OLD.sale_id)
+    ) THEN
+        RAISE EXCEPTION 'Modifying a paid sale is not allowed';
+    END IF;
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER webstore_sale_protect_paid_sale
+    BEFORE UPDATE OR DELETE ON webstore.sale
+    FOR EACH ROW EXECUTE FUNCTION webstore.protect_paid_sale();
+
+CREATE TRIGGER webstore_sale_listing_protect_paid_sale
+    BEFORE INSERT OR UPDATE OR DELETE ON webstore.sale_listing
+    FOR EACH ROW EXECUTE FUNCTION webstore.protect_paid_sale();
+
+CREATE FUNCTION webstore.sale_listing_verify_availability()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM webstore.inventory
+        WHERE webstore.inventory.listing_id = NEW.listing_id
+        AND webstore.inventory.remaining < NEW.quantity
+    )
+    THEN
+        RAISE EXCEPTION 'Insuficient remaining stock for listing %', NEW.listing_id;
+    END IF;
+    IF NEW.listing_id NOT IN (
+        SELECT listing_id
+        FROM webstore.listing
+        WHERE webstore.listing.available_from <= NOW()
+        AND webstore.listing.available_to >= NOW()
+    ) THEN
+        RAISE EXCEPTION 'Listing no longer available %', NEW.listing_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER webstore_sale_listing_verify_availability
+    BEFORE INSERT ON webstore.sale_listing
+    FOR EACH ROW EXECUTE FUNCTION webstore.sale_listing_verify_availability();
+
+CREATE FUNCTION webstore.validate_aquired_product_use()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.aquired_product_id) NOT IN (SELECT webstore.aquired_product_usable.aquired_product_id FROM webstore.aquired_product_usable) THEN
+        RAISE EXCEPTION 'Cannot use this product.';
+    END IF;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER validate_webstore_aquired_product_use
+    BEFORE INSERT ON webstore.aquired_product_use
+    FOR EACH ROW EXECUTE FUNCTION webstore.validate_aquired_product_use();
 
 COMMIT;

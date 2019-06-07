@@ -1,0 +1,21 @@
+- args:
+    permission:
+      allow_upsert: true
+      check:
+        user_id:
+          _eq: x-hasura-user-id
+      columns:
+      - business_name
+      - tax_identification_number
+      localPresets:
+      - key: user_id
+        value: x-hasura-user-id
+      - key: ""
+        value: ""
+      set:
+        user_id: x-hasura-user-id
+    role: client
+    table:
+      name: client
+      schema: account
+  type: create_insert_permission

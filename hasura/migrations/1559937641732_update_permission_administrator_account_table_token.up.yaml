@@ -1,0 +1,14 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - code
+      - expires
+      - token_id
+      filter: {}
+      limit: null
+    role: administrator
+    table:
+      name: token
+      schema: account
+  type: create_select_permission

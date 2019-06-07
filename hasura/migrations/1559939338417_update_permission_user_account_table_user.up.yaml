@@ -1,0 +1,15 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - user_id
+      - username
+      filter:
+        user_id:
+          _eq: x-hasura-user-id
+      limit: null
+    role: user
+    table:
+      name: user
+      schema: account
+  type: create_select_permission

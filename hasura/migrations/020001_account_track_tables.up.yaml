@@ -1,0 +1,24 @@
+- args:
+    name: client
+    schema: account
+  type: add_existing_table_or_view
+- args:
+    name: oauth_provider
+    schema: account
+  type: add_existing_table_or_view
+- args:
+    name: role
+    schema: account
+  type: add_existing_table_or_view
+- args:
+    name: token
+    schema: account
+  type: add_existing_table_or_view
+- args:
+    name: user
+    schema: account
+  type: add_existing_table_or_view
+- args:
+    name: user_role
+    schema: account
+  type: add_existing_table_or_view

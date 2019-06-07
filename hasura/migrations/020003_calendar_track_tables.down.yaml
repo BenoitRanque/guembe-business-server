@@ -5,7 +5,17 @@
   type: untrack_table
 - args:
     table:
+      name: holiday_i18n
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
       name: lifetime
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
+      name: lifetime_i18n
       schema: calendar
   type: untrack_table
 - args:
@@ -16,5 +26,10 @@
 - args:
     table:
       name: weekday
+      schema: calendar
+  type: untrack_table
+- args:
+    table:
+      name: weekday_i18n
       schema: calendar
   type: untrack_table

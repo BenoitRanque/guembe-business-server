@@ -1,0 +1,6 @@
+- args:
+    role: administrator
+    table:
+      name: client
+      schema: account
+  type: drop_select_permission

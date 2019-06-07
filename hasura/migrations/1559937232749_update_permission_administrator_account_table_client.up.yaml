@@ -1,0 +1,16 @@
+- args:
+    permission:
+      allow_aggregations: true
+      columns:
+      - business_name
+      - client_id
+      - created_at
+      - tax_identification_number
+      - updated_at
+      filter: {}
+      limit: null
+    role: administrator
+    table:
+      name: client
+      schema: account
+  type: create_select_permission

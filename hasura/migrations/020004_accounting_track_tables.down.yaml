@@ -1,0 +1,30 @@
+- args:
+    table:
+      name: economic_activity
+      schema: accounting
+  type: untrack_table
+- args:
+    table:
+      name: invoice
+      schema: accounting
+  type: untrack_table
+- args:
+    table:
+      name: invoice_item
+      schema: accounting
+  type: untrack_table
+- args:
+    table:
+      name: payment
+      schema: accounting
+  type: untrack_table
+- args:
+    table:
+      name: payment_status
+      schema: accounting
+  type: untrack_table
+- args:
+    table:
+      name: payment_update
+      schema: accounting
+  type: untrack_table

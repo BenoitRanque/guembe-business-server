@@ -1,0 +1,5 @@
+BEGIN;
+
+CREATE SCHEMA hotel;
+
+COMMIT;

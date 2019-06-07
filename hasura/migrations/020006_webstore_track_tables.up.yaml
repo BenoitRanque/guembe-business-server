@@ -1,0 +1,56 @@
+- args:
+    name: aquired_product
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: aquired_product_usable
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: aquired_product_use
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: cart_listing
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: inventory
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: listing
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: listing_i18n
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: listing_product
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: product
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: product_i18n
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: sale
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: sale_invoice
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: sale_listing
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: sale_payment
+    schema: webstore
+  type: add_existing_table_or_view

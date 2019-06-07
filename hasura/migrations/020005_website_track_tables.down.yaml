@@ -1,0 +1,55 @@
+- args:
+    table:
+      name: element
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: element_i18n
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: image
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: image_format
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: image_format_size
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: page
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: page_i18n
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: section
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: size
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: slide
+      schema: website
+  type: untrack_table
+- args:
+    table:
+      name: slide_i18n
+      schema: website
+  type: untrack_table

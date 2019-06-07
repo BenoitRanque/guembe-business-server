@@ -3,7 +3,15 @@
     schema: calendar
   type: add_existing_table_or_view
 - args:
+    name: holiday_i18n
+    schema: calendar
+  type: add_existing_table_or_view
+- args:
     name: lifetime
+    schema: calendar
+  type: add_existing_table_or_view
+- args:
+    name: lifetime_i18n
     schema: calendar
   type: add_existing_table_or_view
 - args:
@@ -15,34 +23,6 @@
     schema: calendar
   type: add_existing_table_or_view
 - args:
-    name: created_by_user
-    table:
-      name: holiday
-      schema: calendar
-    using:
-      foreign_key_constraint_on: created_by_user_id
-  type: create_object_relationship
-- args:
-    name: updated_by_user
-    table:
-      name: holiday
-      schema: calendar
-    using:
-      foreign_key_constraint_on: updated_by_user_id
-  type: create_object_relationship
-- args:
-    name: created_by_user
-    table:
-      name: lifetime
-      schema: calendar
-    using:
-      foreign_key_constraint_on: created_by_user_id
-  type: create_object_relationship
-- args:
-    name: updated_by_user
-    table:
-      name: lifetime
-      schema: calendar
-    using:
-      foreign_key_constraint_on: updated_by_user_id
-  type: create_object_relationship
+    name: weekday_i18n
+    schema: calendar
+  type: add_existing_table_or_view

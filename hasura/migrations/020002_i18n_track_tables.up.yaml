@@ -1,0 +1,8 @@
+- args:
+    name: locale
+    schema: i18n
+  type: add_existing_table_or_view
+- args:
+    name: message
+    schema: i18n
+  type: add_existing_table_or_view

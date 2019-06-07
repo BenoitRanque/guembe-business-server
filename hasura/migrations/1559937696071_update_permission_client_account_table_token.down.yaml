@@ -1,0 +1,6 @@
+- args:
+    role: client
+    table:
+      name: token
+      schema: account
+  type: drop_insert_permission
