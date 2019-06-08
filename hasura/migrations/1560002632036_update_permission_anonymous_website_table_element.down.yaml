@@ -1,0 +1,6 @@
+- args:
+    role: anonymous
+    table:
+      name: element
+      schema: website
+  type: drop_select_permission

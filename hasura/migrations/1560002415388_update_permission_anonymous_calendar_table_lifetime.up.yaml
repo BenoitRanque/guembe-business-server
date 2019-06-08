@@ -1,0 +1,17 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - end
+      - include_holidays
+      - lifetime_id
+      - name
+      - start
+      - updated_by_user_id
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: lifetime
+      schema: calendar
+  type: create_select_permission

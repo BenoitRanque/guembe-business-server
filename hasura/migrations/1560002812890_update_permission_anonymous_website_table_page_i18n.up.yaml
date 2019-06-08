@@ -2,13 +2,13 @@
     permission:
       allow_aggregations: false
       columns:
-      - code
-      - expires
-      - token_id
+      - locale_id
+      - name
+      - page_id
       filter: {}
       limit: null
-    role: administrator
+    role: anonymous
     table:
-      name: token
-      schema: account
+      name: page_i18n
+      schema: website
   type: create_select_permission

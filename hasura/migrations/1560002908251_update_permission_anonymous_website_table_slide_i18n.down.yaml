@@ -1,0 +1,6 @@
+- args:
+    role: anonymous
+    table:
+      name: slide_i18n
+      schema: website
+  type: drop_insert_permission

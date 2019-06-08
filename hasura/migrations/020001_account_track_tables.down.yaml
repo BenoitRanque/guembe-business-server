@@ -1,5 +1,10 @@
 - args:
     table:
+      name: user_type
+      schema: account
+  type: untrack_table
+- args:
+    table:
       name: client
       schema: account
   type: untrack_table

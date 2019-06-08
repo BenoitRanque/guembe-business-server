@@ -1,6 +1,0 @@
-- args:
-    role: administrator
-    table:
-      name: token
-      schema: account
-  type: drop_select_permission

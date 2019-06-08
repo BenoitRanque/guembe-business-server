@@ -1,6 +1,0 @@
-- args:
-    role: client
-    table:
-      name: client
-      schema: account
-  type: drop_delete_permission

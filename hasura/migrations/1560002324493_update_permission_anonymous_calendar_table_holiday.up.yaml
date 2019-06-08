@@ -1,0 +1,14 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - date
+      - holiday_id
+      - name
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: holiday
+      schema: calendar
+  type: create_select_permission

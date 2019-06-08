@@ -1,0 +1,12 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - locale_id
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: locale
+      schema: i18n
+  type: create_select_permission

@@ -2,13 +2,11 @@
     permission:
       allow_aggregations: false
       columns:
-      - role_id
-      - name
-      - description
+      - image_format_id
       filter: {}
       limit: null
-    role: administrator
+    role: anonymous
     table:
-      name: role
-      schema: account
+      name: image_format
+      schema: website
   type: create_select_permission

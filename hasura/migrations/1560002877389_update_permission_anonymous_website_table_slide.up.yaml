@@ -1,0 +1,14 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - index
+      - page_id
+      - slide_id
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: slide
+      schema: website
+  type: create_select_permission

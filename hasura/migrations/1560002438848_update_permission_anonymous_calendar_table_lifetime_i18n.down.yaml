@@ -1,0 +1,6 @@
+- args:
+    role: anonymous
+    table:
+      name: lifetime_i18n
+      schema: calendar
+  type: drop_select_permission

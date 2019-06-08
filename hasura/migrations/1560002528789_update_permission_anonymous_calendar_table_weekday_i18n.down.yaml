@@ -1,0 +1,6 @@
+- args:
+    role: anonymous
+    table:
+      name: weekday_i18n
+      schema: calendar
+  type: drop_update_permission

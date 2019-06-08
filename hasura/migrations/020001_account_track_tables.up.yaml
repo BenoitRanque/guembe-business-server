@@ -1,4 +1,8 @@
 - args:
+    name: user_type
+    schema: account
+  type: add_existing_table_or_view
+- args:
     name: client
     schema: account
   type: add_existing_table_or_view

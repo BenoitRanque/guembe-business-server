@@ -1,0 +1,17 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - element_id
+      - image_id
+      - index
+      - section_id
+      - size_id
+      - target
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: element
+      schema: website
+  type: create_select_permission

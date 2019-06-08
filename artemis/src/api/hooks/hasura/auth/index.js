@@ -5,7 +5,9 @@ const app = express()
 const parseSession = require('../../../../utils/middlewares/parseSession')
 
 app.get('/', cookieParser(), parseSession, function (req, res, next) {
-  const grants = {}
+  const grants = {
+    now: new Date().toISOString()
+  }
 
   if (!req.session) {
     // default to anonymous role

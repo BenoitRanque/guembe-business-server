@@ -1,0 +1,11 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns: []
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: lifetime_weekday
+      schema: calendar
+  type: create_select_permission

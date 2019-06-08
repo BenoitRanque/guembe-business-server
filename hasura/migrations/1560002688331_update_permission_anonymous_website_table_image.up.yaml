@@ -1,0 +1,15 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - image_format_id
+      - image_id
+      - name
+      - placeholder
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: image
+      schema: website
+  type: create_select_permission

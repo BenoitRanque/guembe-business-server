@@ -1,0 +1,16 @@
+- args:
+    permission:
+      columns:
+      - weekday_id
+      - locale_id
+      - name
+      filter: {}
+      localPresets:
+      - key: ""
+        value: ""
+      set: {}
+    role: anonymous
+    table:
+      name: weekday_i18n
+      schema: calendar
+  type: create_update_permission

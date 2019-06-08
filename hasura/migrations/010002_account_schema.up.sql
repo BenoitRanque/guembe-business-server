@@ -1,6 +1,13 @@
 BEGIN;
 CREATE SCHEMA account;
 
+CREATE TABLE account.user_type (
+    user_type_id TEXT PRIMARY KEY
+);
+
+INSERT INTO account.user_type (user_type_id)
+VALUES ('client'), ('staff');
+
 CREATE TABLE account.oauth_provider (
     oauth_provider_id TEXT PRIMARY KEY
 );
@@ -10,21 +17,24 @@ VALUES ('google'), ('facebook');
 
 CREATE TABLE account.user (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username TEXT UNIQUE,
-    password TEXT,
+    user_type_id TEXT NOT NULL REFERENCES account.user_type (user_type_id),
     oauth_provider_id TEXT REFERENCES account.oauth_provider (oauth_provider_id),
     oauth_id TEXT,
+    email TEXT UNIQUE,
+    username TEXT UNIQUE,
+    password TEXT,
     UNIQUE (oauth_provider_id, oauth_id),
     CHECK(
-        username IS NOT NULL AND
-        password IS NOT NULL AND
-        oauth_provider_id IS NULL AND
-        oauth_id IS NULL
-        OR
-        username IS NULL AND
-        password IS NULL AND
         oauth_provider_id IS NOT NULL AND
-        oauth_id IS NOT NULL
+        oauth_id IS NOT NULL AND
+        email IS NULL AND
+        username IS NULL AND
+        password IS NULL
+        OR
+        oauth_provider_id IS NULL AND
+        oauth_id IS NULL AND
+        (email IS NOT NULL OR username IS NOT NULL)
+        AND password IS NOT NULL
     ),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

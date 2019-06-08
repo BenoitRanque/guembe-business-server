@@ -1,0 +1,12 @@
+- args:
+    permission:
+      allow_aggregations: false
+      columns:
+      - size_id
+      filter: {}
+      limit: null
+    role: anonymous
+    table:
+      name: size
+      schema: website
+  type: create_select_permission
