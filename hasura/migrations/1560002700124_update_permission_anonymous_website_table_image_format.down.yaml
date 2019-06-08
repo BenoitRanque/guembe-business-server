@@ -1,6 +1,0 @@
-- args:
-    role: anonymous
-    table:
-      name: image_format
-      schema: website
-  type: drop_select_permission

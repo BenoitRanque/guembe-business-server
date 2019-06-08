@@ -244,6 +244,41 @@ CREATE TRIGGER webstore_sale_listing_protect_paid_sale
     BEFORE INSERT OR UPDATE OR DELETE ON webstore.sale_listing
     FOR EACH ROW EXECUTE FUNCTION webstore.protect_paid_sale();
 
+CREATE FUNCTION webstore.update_listing_total()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE webstore.listing
+    SET webstore.listing.total = (
+        SELECT SUM(webstore.listing_product.quantity * webstore.listing_product.price) AS total
+        FROM webstore.listing_product
+        WHERE webstore.listing_product.listing_id = COALESCE(NEW.listing_id, OLD.listing_id)
+    ) WHERE webstore.listing.listing_id = COALESCE(NEW.listing_id, OLD.listing_id);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_webstore_listing_total
+    AFTER INSERT OR UPDATE OR DELETE ON webstore.listing_product
+    FOR EACH ROW EXECUTE FUNCTION webstore.update_listing_total();
+
+CREATE FUNCTION webstore.update_sale_total()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE webstore.sale
+    SET webstore.sale.total = (
+        SELECT SUM(webstore.sale_listing.quantity * webstore.listing_product.quantity * webstore.listing_product.price) AS total
+        FROM webstore.sale_listing
+        LEFT JOIN webstore.listing_product ON webstore.sale_listing.listing_id = webstore.listing_product.listing_id
+        WHERE webstore.sale_listing.sale_id = COALESCE(NEW.sale_id, OLD.sale_id)
+    ) WHERE webstore.sale.sale_id = COALESCE(NEW.sale_id, OLD.sale_id);
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_webstore_sale_total
+    AFTER INSERT OR UPDATE OR DELETE ON webstore.sale_listing
+    FOR EACH ROW EXECUTE FUNCTION webstore.update_sale_total();
+
 CREATE FUNCTION webstore.sale_listing_verify_availability()
 RETURNS TRIGGER AS $$
 BEGIN

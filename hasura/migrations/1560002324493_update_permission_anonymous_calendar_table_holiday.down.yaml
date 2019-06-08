@@ -1,6 +1,0 @@
-- args:
-    role: anonymous
-    table:
-      name: holiday
-      schema: calendar
-  type: drop_select_permission

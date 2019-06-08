@@ -1,6 +1,0 @@
-- args:
-    role: anonymous
-    table:
-      name: section
-      schema: website
-  type: drop_select_permission

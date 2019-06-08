@@ -1,6 +1,0 @@
-- args:
-    role: anonymous
-    table:
-      name: locale
-      schema: i18n
-  type: drop_select_permission
