@@ -39,7 +39,7 @@ CREATE TABLE webstore.listing (
     available_to DATE NOT NULL,
     CHECK (available_from <= available_to),
     supply INTEGER CHECK (supply IS NULL OR supply > 0),
-    total INTEGER NOT NULL CHECK (total >= 0),
+    total INTEGER NOT NULL CHECK (total >= 0) DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -86,7 +86,7 @@ CREATE TABLE webstore.sale (
     sale_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES account.user (user_id),
     client_id UUID NOT NULL REFERENCES account.client (client_id),
-    total INTEGER NOT NULL CHECK (total > 0),
+    total INTEGER NOT NULL CHECK (total >= 0) DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -248,7 +248,7 @@ CREATE FUNCTION webstore.update_listing_total()
 RETURNS TRIGGER AS $$
 BEGIN
     UPDATE webstore.listing
-    SET webstore.listing.total = (
+    SET total = (
         SELECT SUM(webstore.listing_product.quantity * webstore.listing_product.price) AS total
         FROM webstore.listing_product
         WHERE webstore.listing_product.listing_id = COALESCE(NEW.listing_id, OLD.listing_id)
@@ -265,7 +265,7 @@ CREATE FUNCTION webstore.update_sale_total()
 RETURNS TRIGGER AS $$
 BEGIN
     UPDATE webstore.sale
-    SET webstore.sale.total = (
+    SET total = (
         SELECT SUM(webstore.sale_listing.quantity * webstore.listing_product.quantity * webstore.listing_product.price) AS total
         FROM webstore.sale_listing
         LEFT JOIN webstore.listing_product ON webstore.sale_listing.listing_id = webstore.listing_product.listing_id

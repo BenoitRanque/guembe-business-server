@@ -80,15 +80,17 @@ CREATE TRIGGER account_token_delete_expired AFTER INSERT ON account.token
 
 
 CREATE TABLE account.role (
-    role_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL UNIQUE,
+    role_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
     description TEXT
 );
 
 CREATE TABLE account.user_role (
     user_id UUID REFERENCES account.user(user_id)
         ON DELETE CASCADE,
-    role_id UUID REFERENCES account.role(role_id),
+    role_id TEXT REFERENCES account.role(role_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -110,5 +112,31 @@ CREATE TABLE account.client (
 );
 CREATE TRIGGER account_client_set_updated_at BEFORE UPDATE ON account.client
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+DO $$
+DECLARE
+    admin_user_id UUID;
+BEGIN
+
+INSERT INTO account.user
+    (user_type_id, username, password)
+VALUES ('staff', 'admin', 'admin')
+RETURNING user_id INTO admin_user_id;
+
+WITH admin_user (user_id) AS (
+	VALUES (admin_user_id)
+), account_roles (role_id) AS (
+    INSERT INTO account.role
+        (role_id, name, description)
+    VALUES
+        ('administrator', 'Administrador', 'Usuario administrador maximo.')
+    RETURNING role_id
+)
+INSERT INTO account.user_role
+    (user_id, role_id, created_by_user_id, updated_by_user_id)
+SELECT user_id, role_id, user_id, user_id
+FROM account_roles CROSS JOIN admin_user;
+
+END $$;
 
 COMMIT;
