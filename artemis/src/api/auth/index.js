@@ -9,6 +9,105 @@ const app = express()
 
 app.use(cookieParser())
 
+app.get('/oauth/:provider', async function (req, res, next) {
+  const xsrfToken = uuid()
+
+  res.cookie('XSRF-TOKEN-OAUTH', xsrfToken, {
+    httpOnly: true,
+    secure: true,
+    maxAge: 5 * 60 * 1000 // 5 minutes max to login
+  })
+
+  const state = encodeState({
+    xsrfToken,
+    clientState: req.query
+  })
+
+  if (req.oauth.hasOwnProperty(req.params.provider)) {
+    return res.redirect(req.oauth[req.params.provider].getAuthenticationURL(state))
+  }
+  next(new NotFoundError())
+})
+
+app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), async function (req, res, next) {
+  const provider = req.params.provider
+
+  const state = decodeState(req.query.state)
+
+  const stateToken = state.xsrfToken
+  const cookieToken = req.cookies['XSRF-TOKEN-OAUTH']
+
+  // check if xsrftoken matches
+  if (!stateToken || stateToken !== cookieToken) {
+    return next(new BadRequestError())
+  }
+
+  if (!req.oauth.hasOwnProperty(provider)) {
+    return next(new NotFoundError())
+  }
+
+  try {
+
+    const accessToken = await req.oauth[provider].getAccessToken(req.query.code)
+    const userOAuthAccount = await req.oauth[provider].getUserOAuthAccount(accessToken)
+
+    let userAccount = null
+
+    userAccount = await loadClientAccount(userOAuthAccount, req.db)
+    if (userAccount === null) {
+      userAccount = await createClientAccount(userOAuthAccount, req.db)
+    }
+
+    const session = await getUserSession(userAccount, req.db)
+    const token = getSessionToken(session)
+
+    setSessionCookie(token, res)
+
+    const [ header, payload ] = token.split('.')
+
+    return res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/?session=${header}.${payload}`)
+
+  } catch (error) {
+    console.error(error)
+    // redirect to home page
+    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
+  }
+
+  try {
+    switch (req.params.provider) {
+      case 'google':
+        {
+          const access_token = await google.getAccessToken(req.query.code)
+          userOAuthAccount = await google.getUserOAuthAccount(access_token)
+        }
+        break
+      case 'facebook':
+        {
+          const access_token = await facebook.getAccessToken(req.query.code)
+          userOAuthAccount = await facebook.getUserOAuthAccount(access_token)
+        }
+        break
+      default:
+        return next(new NotFoundError())
+    }
+
+    clientAccount = await loadClientAccount(userOAuthAccount, req.db)
+    if (clientAccount === null) {
+      clientAccount = await createClientAccount(userOAuthAccount, req.db)
+    }
+
+    const session = getClientSession(clientAccount)
+
+    setSessionCookie(session, res)
+
+    // todo: send client state back as query params
+    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
+  } catch (error) {
+    console.log('error in callback')
+    next(error)
+  }
+})
+
 app.post('/login', express.json(), async function (req, res, next) {
   const { username = null, email = null, password } = req.body
 
@@ -35,6 +134,7 @@ app.post('/login', express.json(), async function (req, res, next) {
       return res.status(200).send(`${header}.${payload}`)
     }
   }
+  next(new ForbiddenError())
 })
 
 app.post('/logout', function (req, res, next) {
@@ -42,7 +142,6 @@ app.post('/logout', function (req, res, next) {
   res.clearCookie('session-key')
   res.status(204).end()
 })
-
 
 async function getUserSession (user, db) {
   const { user_id, user_type_id } = user
@@ -52,7 +151,7 @@ async function getUserSession (user, db) {
   // dont run this for clients. May change in future
   if (user_type_id !== 'client') {
     const query = `
-      SELECT role_name
+      SELECT account.role.role_id
       FROM account.user_role
       LEFT JOIN account.role ON (account.user_role.role_id = account.role.role_id)
       WHERE user_id = $1
@@ -61,7 +160,7 @@ async function getUserSession (user, db) {
 
 
     if (roleRows.length) {
-      roles.push(...roleRows.map(({ role_name }) => role_name))
+      roles.push(...roleRows.map(({ role_id }) => role_id))
     }
   }
 
@@ -102,6 +201,80 @@ function setSessionCookie(token, res) {
     httpOnly: true,
     secure: true
   })
+}
+
+function encodeState (state) {
+  return Buffer.from(JSON.stringify(state)).toString('base64')
+}
+
+function decodeState (state) {
+  return JSON.parse(Buffer.from(state, 'base64').toString())
+}
+
+async function loadClientAccount (clientAuth, db) {
+  const query = `
+    SELECT account.user.user_id, account.user.user_type_id
+    FROM account.user
+    WHERE oauth_provider_id = $1
+    AND oauth_id = $2
+  `
+  const { rows: [ client ] } = await db.query(query, [
+    clientAuth.oauth_provider_id,
+    clientAuth.oauth_id
+  ])
+
+  return client ? client : null
+}
+
+async function createClientAccount (clientAuth, db) {
+  const query = `
+    WITH data(user_type_id, oauth_id, oauth_provider_id, name, email, first_name, middle_name, last_name) AS (
+      VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8)
+    ), account_user AS (
+      INSERT INTO account.user (user_type_id, oauth_id, oauth_provider_id)
+      SELECT user_type_id, oauth_id, oauth_provider_id FROM data
+      RETURNING user_id, oauth_id, oauth_provider_id
+    )
+    INSERT INTO account.client (
+      user_id,
+      name,
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      business_name
+    ) SELECT
+      user_id,
+      name,
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      business_name
+    FROM data JOIN account_user USING (oauth_id, oauth_provider_id);
+  `
+
+  // order here must be same as above. Be careful
+  const { rows: [ client ] } = await db.query(query, [
+    clientAuth.name,
+    clientAuth.email,
+    clientAuth.first_name,
+    clientAuth.middle_name,
+    clientAuth.last_name,
+    clientAuth.oauth_provider_id,
+    clientAuth.oauth_id
+  ])
+
+  return client
+}
+
+function createAccountClient (client) {
+
+}
+
+function createAccountUserOAuth (user) {
+
 }
 
 module.exports = app

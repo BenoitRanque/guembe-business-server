@@ -2,9 +2,11 @@ const express = require('express')
 const CORSPolicy = require('../utils/middlewares/CORSPolicy')
 const setCSRFToken = require('../utils/middlewares/setCSRFToken')
 const db = require('../utils/db')
+const oauth = require('../utils/oauth')
 const cookieParser = require('cookie-parser')
 
 express.request.db = db
+express.request.oauth = oauth
 
 const app = express()
 
