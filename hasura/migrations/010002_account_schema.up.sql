@@ -18,24 +18,24 @@ VALUES ('google'), ('facebook');
 CREATE TABLE account.user (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_type_id TEXT NOT NULL REFERENCES account.user_type (user_type_id),
-    oauth_provider_id TEXT REFERENCES account.oauth_provider (oauth_provider_id),
-    oauth_id TEXT,
-    email TEXT UNIQUE,
     username TEXT UNIQUE,
     password TEXT,
+    oauth_id TEXT,
+    oauth_provider_id TEXT REFERENCES account.oauth_provider (oauth_provider_id),
     UNIQUE (oauth_provider_id, oauth_id),
     CHECK(
-        oauth_provider_id IS NOT NULL AND
-        oauth_id IS NOT NULL AND
-        email IS NULL AND
         username IS NULL AND
-        password IS NULL
+        password IS NULL AND
+        oauth_id IS NOT NULL AND
+        oauth_provider_id IS NOT NULL
         OR
-        oauth_provider_id IS NULL AND
+        username IS NOT NULL AND
+        password IS NOT NULL AND
         oauth_id IS NULL AND
-        (email IS NOT NULL OR username IS NOT NULL)
-        AND password IS NOT NULL
+        oauth_provider_id IS NULL
     ),
+    name TEXT,
+    email TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID REFERENCES account.user (user_id),

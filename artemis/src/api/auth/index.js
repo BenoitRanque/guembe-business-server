@@ -51,11 +51,19 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
     const accessToken = await req.oauth[provider].getAccessToken(req.query.code)
     const userOAuthAccount = await req.oauth[provider].getUserOAuthAccount(accessToken)
 
-    let userAccount = null
+    const query = `
+      SELECT account.user.user_id, account.user.user_type_id
+      FROM account.user
+      WHERE oauth_provider_id = $1
+      AND oauth_id = $2
+    `
+    let { rows: [ userAccount ] } = await req.db.query(query, [
+      userOAuthAccount.oauth_provider_id,
+      userOAuthAccount.oauth_id
+    ])
 
-    userAccount = await loadClientAccount(userOAuthAccount, req.db)
-    if (userAccount === null) {
-      userAccount = await createClientAccount(userOAuthAccount, req.db)
+    if (!userAccount) {
+      userAccount = await createAccountUser({ ...userOAuthAccount, user_type_id: 'client' }, req.db)
     }
 
     const session = await getUserSession(userAccount, req.db)
@@ -72,54 +80,18 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
     // redirect to home page
     res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
   }
-
-  try {
-    switch (req.params.provider) {
-      case 'google':
-        {
-          const access_token = await google.getAccessToken(req.query.code)
-          userOAuthAccount = await google.getUserOAuthAccount(access_token)
-        }
-        break
-      case 'facebook':
-        {
-          const access_token = await facebook.getAccessToken(req.query.code)
-          userOAuthAccount = await facebook.getUserOAuthAccount(access_token)
-        }
-        break
-      default:
-        return next(new NotFoundError())
-    }
-
-    clientAccount = await loadClientAccount(userOAuthAccount, req.db)
-    if (clientAccount === null) {
-      clientAccount = await createClientAccount(userOAuthAccount, req.db)
-    }
-
-    const session = getClientSession(clientAccount)
-
-    setSessionCookie(session, res)
-
-    // todo: send client state back as query params
-    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
-  } catch (error) {
-    console.log('error in callback')
-    next(error)
-  }
 })
 
 app.post('/login', express.json(), async function (req, res, next) {
-  const { username = null, email = null, password } = req.body
+  const { username, password } = req.body
 
   const query = `
     SELECT user_id, user_type_id, password
     FROM account.user
-    WHERE ${username !== null ? 'username' : 'email'} = $1
+    WHERE username = $1
   `
 
-  const { rows: [ user ] } = await req.db.query(query, [
-    username !== null ? username : email
-  ])
+  const { rows: [ user ] } = await req.db.query(query, [ username ])
 
   if (user) {
     const valid = await bcrypt.compare(password, user.password)
@@ -211,70 +183,29 @@ function decodeState (state) {
   return JSON.parse(Buffer.from(state, 'base64').toString())
 }
 
-async function loadClientAccount (clientAuth, db) {
-  const query = `
-    SELECT account.user.user_id, account.user.user_type_id
-    FROM account.user
-    WHERE oauth_provider_id = $1
-    AND oauth_id = $2
-  `
-  const { rows: [ client ] } = await db.query(query, [
-    clientAuth.oauth_provider_id,
-    clientAuth.oauth_id
-  ])
+async function createAccountUser (user, db) {
 
-  return client ? client : null
-}
-
-async function createClientAccount (clientAuth, db) {
   const query = `
-    WITH data(user_type_id, oauth_id, oauth_provider_id, name, email, first_name, middle_name, last_name) AS (
-      VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8)
-    ), account_user AS (
-      INSERT INTO account.user (user_type_id, oauth_id, oauth_provider_id)
-      SELECT user_type_id, oauth_id, oauth_provider_id FROM data
-      RETURNING user_id, oauth_id, oauth_provider_id
-    )
-    INSERT INTO account.client (
-      user_id,
+    INSERT INTO account.user (
+      user_type_id,
+      ${user.oauth_provider_id ? 'oauth_id' : 'username'},
+      ${user.oauth_provider_id ? 'oauth_provider_id' : 'password'},
       name,
-      email,
-      first_name,
-      middle_name,
-      last_name,
-      business_name
-    ) SELECT
-      user_id,
-      name,
-      email,
-      first_name,
-      middle_name,
-      last_name,
-      business_name
-    FROM data JOIN account_user USING (oauth_id, oauth_provider_id);
+      email
+    ) VALUES ($1, $2, $3, $4, $5)
+    RETURNING user_id, user_type_id, name
   `
 
   // order here must be same as above. Be careful
   const { rows: [ client ] } = await db.query(query, [
-    clientAuth.name,
-    clientAuth.email,
-    clientAuth.first_name,
-    clientAuth.middle_name,
-    clientAuth.last_name,
-    clientAuth.oauth_provider_id,
-    clientAuth.oauth_id
+    user.user_type_id,
+    user.oauth_provider_id ? user.oauth_id : user.username,
+    user.oauth_provider_id ? user.oauth_provider_id : user.password,
+    user.name,
+    user.email
   ])
 
   return client
-}
-
-function createAccountClient (client) {
-
-}
-
-function createAccountUserOAuth (user) {
-
 }
 
 module.exports = app

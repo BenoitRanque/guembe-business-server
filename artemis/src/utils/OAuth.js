@@ -97,8 +97,8 @@ const google = new OAuth2({
     }
 
     return {
-      authentication_provider_name: 'google',
-      authentication_provider_account_id: id,
+      oauth_provider_id: 'google',
+      oauth_id: id,
       name: name ? name : '',
       email: email ? email : '',
       first_name: first_name ? first_name : '',
@@ -122,8 +122,8 @@ const facebook = new OAuth2({
     const { id, name, email, first_name, middle_name, last_name } = fields
 
     return {
-      authentication_provider_name: 'facebook',
-      authentication_provider_account_id: id,
+      oauth_provider_id: 'facebook',
+      oauth_id: id,
       name: name ? name : '',
       email: email ? email : '',
       first_name: first_name ? first_name : '',
