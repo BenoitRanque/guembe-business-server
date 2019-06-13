@@ -110,7 +110,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./public/uploads:/usr/app/uploads:rw
+      - ./public/static/uploads:/usr/app/uploads:rw
     networks:
       - app-network
 # volumes:

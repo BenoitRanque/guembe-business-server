@@ -19,8 +19,8 @@ CREATE TABLE website.image_format_size (
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 	PRIMARY KEY (image_format_id, size_id),
-    width INTEGER CHECK (width >= 0),
-    height INTEGER CHECK (height >= 0)
+    width INTEGER NOT NULL CHECK (width >= 0),
+    height INTEGER NOT NULL CHECK (height >= 0)
 );
 
 CREATE TABLE website.image (

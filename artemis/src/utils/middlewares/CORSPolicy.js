@@ -3,6 +3,7 @@ const corser = require('corser')
 // Cross Origin Resource Sharing policy
 // Set headers required for cross origin requests
 
+
 module.exports = corser.create({
   origins: ['https://chuturubi.com', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'],
   requestHeaders: corser.simpleRequestHeaders.concat(['Authorization']),

@@ -10,6 +10,11 @@ express.request.oauth = oauth
 
 const app = express()
 
+app.use(function (req, res, next) {
+  console.log(`request of type`, req.method)
+  next()
+})
+
 app.use(CORSPolicy)
 // app.use(setCSRFToken)
 
