@@ -8,8 +8,10 @@ INSERT INTO website.size (size_id)
 VALUES ('xl'), ('lg'), ('md'), ('sm'), ('xs');
 
 CREATE TABLE website.format (
-    format_id TEXT PRIMARY KEY
+    format_id TEXT PRIMARY KEY,
+    name TEXT
 );
+
 
 CREATE TABLE website.format_size (
     format_id TEXT REFERENCES website.format (format_id)
@@ -22,6 +24,27 @@ CREATE TABLE website.format_size (
     width INTEGER NOT NULL CHECK (width >= 0),
     height INTEGER NOT NULL CHECK (height >= 0)
 );
+
+INSERT INTO website.format (format_id, name) VALUES
+    ('card', 'Tarjeta'),
+    ('slide', 'Carousel'),
+    ('backdrop', 'Fondo');
+INSERT INTO website.format_size (format_id, size_id, width, height) VALUES
+    ('card', 'xl', 800, 600),
+    ('card', 'lg', 640, 480),
+    ('card', 'md', 480, 360),
+    ('card', 'sm', 320, 240),
+    ('card', 'xs', 160, 120),
+    ('backdrop', 'xl', 1400, 700),
+    ('backdrop', 'lg', 1120, 560),
+    ('backdrop', 'md', 840, 420),
+    ('backdrop', 'sm', 560, 280),
+    ('backdrop', 'xs', 280, 140),
+    ('slide', 'xl', 1400, 700),
+    ('slide', 'lg', 1120, 560),
+    ('slide', 'md', 840, 420),
+    ('slide', 'sm', 560, 280),
+    ('slide', 'xs', 280, 140);
 
 CREATE TABLE website.image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
