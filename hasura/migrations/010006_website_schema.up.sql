@@ -40,6 +40,7 @@ CREATE TABLE website.page (
     page_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     path TEXT UNIQUE NOT NULL,
 	name TEXT NOT NULL,
+    image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -64,43 +65,13 @@ CREATE TABLE website.page_i18n (
 CREATE TRIGGER website_page_i18n_set_updated_at BEFORE UPDATE ON website.page_i18n
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE website.slide (
-    slide_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    page_id UUID NOT NULL REFERENCES website.page (page_id)
-        ON DELETE CASCADE,
-    index INTEGER NOT NULL CHECK (index >= 0),
-    UNIQUE (page_id, index),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
-    updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
-);
-CREATE TRIGGER website_slide_set_updated_at BEFORE UPDATE ON website.slide
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TABLE website.slide_i18n (
-    slide_id UUID REFERENCES website.slide (slide_id)
-        ON DELETE CASCADE,
-	locale_id TEXT REFERENCES i18n.locale(locale_id)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	PRIMARY KEY (slide_id, locale_id),
-    image_id UUID NOT NULL REFERENCES website.image (image_id)
-        ON DELETE RESTRICT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
-    updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
-);
-CREATE TRIGGER website_slide_i18n_set_updated_at BEFORE UPDATE ON website.slide_i18n
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
 CREATE TABLE website.section (
     section_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	page_id UUID NOT NULL REFERENCES website.page (page_id)
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
     UNIQUE(page_id, index),
+    slider BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -116,8 +87,11 @@ CREATE TABLE website.element (
     index INTEGER NOT NULL CHECK (index >= 0),
     UNIQUE (section_id, index),
     size_id TEXT NOT NULL REFERENCES website.size (size_id),
-    image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
-    target TEXT,
+    internal_link TEXT REFERENCES website.page (path)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    external_link TEXT,
+    -- listing lind added after webstore schema created
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -133,6 +107,7 @@ CREATE TABLE website.element_i18n (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 	PRIMARY KEY (element_id, locale_id),
+    image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
     caption TEXT,
     title TEXT,
     subtitle TEXT,

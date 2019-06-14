@@ -43,13 +43,3 @@
       name: size
       schema: website
   type: untrack_table
-- args:
-    table:
-      name: slide
-      schema: website
-  type: untrack_table
-- args:
-    table:
-      name: slide_i18n
-      schema: website
-  type: untrack_table

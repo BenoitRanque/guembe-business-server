@@ -34,11 +34,3 @@
     name: size
     schema: website
   type: add_existing_table_or_view
-- args:
-    name: slide
-    schema: website
-  type: add_existing_table_or_view
-- args:
-    name: slide_i18n
-    schema: website
-  type: add_existing_table_or_view
