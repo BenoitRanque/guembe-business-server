@@ -11,8 +11,8 @@ const { getImageSizes, createImageSizes, removeImageSizes, getPlaceholder } = re
 const { BadRequestError } = require('../../utils/errors')
 
 // create image directory if not exists
-if (!fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing`)) {
-  fs.mkdirSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image/listing`, { recursive: true })
+if (!fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image`)) {
+  fs.mkdirSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image`, { recursive: true })
 }
 
 const upload = multer({
@@ -46,7 +46,7 @@ const upload = multer({
 
 const app = express()
 
-app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administrator']), upload.single('image'), async (req, res) => {
+app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administrator']), upload.single('image'), async (req, res, next) => {
   console.log('uploading image...')
 
   if (!req.file) {

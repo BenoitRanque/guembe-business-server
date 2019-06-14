@@ -28,18 +28,18 @@ CREATE TABLE website.format_size (
 INSERT INTO website.format (format_id, name) VALUES
     ('card', 'Tarjeta'),
     ('slide', 'Carousel'),
-    ('backdrop', 'Fondo');
+    ('background', 'Fondo');
 INSERT INTO website.format_size (format_id, size_id, width, height) VALUES
     ('card', 'xl', 800, 600),
     ('card', 'lg', 640, 480),
     ('card', 'md', 480, 360),
     ('card', 'sm', 320, 240),
     ('card', 'xs', 160, 120),
-    ('backdrop', 'xl', 1400, 700),
-    ('backdrop', 'lg', 1120, 560),
-    ('backdrop', 'md', 840, 420),
-    ('backdrop', 'sm', 560, 280),
-    ('backdrop', 'xs', 280, 140),
+    ('background', 'xl', 1400, 700),
+    ('background', 'lg', 1120, 560),
+    ('background', 'md', 840, 420),
+    ('background', 'sm', 560, 280),
+    ('background', 'xs', 280, 140),
     ('slide', 'xl', 1400, 700),
     ('slide', 'lg', 1120, 560),
     ('slide', 'md', 840, 420),
