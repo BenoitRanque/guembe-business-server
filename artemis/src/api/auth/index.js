@@ -167,11 +167,11 @@ function setSessionCookie(token, res) {
 
   res.cookie('session-auth', `${header}.${payload}`, {
     httpOnly: false,
-    secure: true
+    secure: process.env.NODE_ENV === 'production'
   })
   res.cookie('session-key', signature, {
     httpOnly: true,
-    secure: true
+    secure: process.env.NODE_ENV === 'production'
   })
 }
 
