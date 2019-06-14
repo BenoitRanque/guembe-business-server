@@ -53,9 +53,9 @@ app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administr
     return next(new BadRequestError('No file named image was present'))
   }
 
-  const image_format_id = req.query.format
+  const format_id = req.query.format
 
-  if (!image_format_id) {
+  if (!format_id) {
     return next(new BadRequestError('No format query parameter was present'))
   }
 
@@ -76,10 +76,10 @@ app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administr
     // hasAlpha: true
 
   try {
-    const sizes = await getImageSizes(image_format_id)
+    const sizes = await getImageSizes(format_id)
 
     if (!sizes.length) {
-      return next(new BadRequestError(`Could not find image format ${image_format_id}`))
+      return next(new BadRequestError(`Could not find image format ${format_id}`))
     }
 
     const image_id = await createImageSizes(req.file.buffer, sizes)
@@ -88,9 +88,9 @@ app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administr
 
     await req.db.query(`
       INSERT INTO website.image
-        (image_id, image_format_id, name, placeholder, created_by_user_id, updated_by_user_id)
+        (image_id, format_id, name, placeholder, created_by_user_id, updated_by_user_id)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, [ image_id, image_format_id, name, placeholder, userId, userId ])
+    `, [ image_id, format_id, name, placeholder, userId, userId ])
 
     res.status(200).end(image_id)
   } catch (error) {

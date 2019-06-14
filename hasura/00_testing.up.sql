@@ -404,7 +404,7 @@ VALUES ('xl'), ('lg'), ('md'), ('sm'), ('xs');
 
 CREATE TABLE website.image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    image_format_id TEXT NOT NULL,
+    format_id TEXT NOT NULL,
     name TEXT,
     placeholder TEXT,
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -415,18 +415,18 @@ CREATE TABLE website.image (
 CREATE TRIGGER website_image_set_updated_at BEFORE UPDATE ON website.image
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE website.image_format (
-    image_format_id TEXT PRIMARY KEY
+CREATE TABLE website.format (
+    format_id TEXT PRIMARY KEY
 );
 
-CREATE TABLE website.image_format_size (
-    image_format_id TEXT REFERENCES website.image_format (image_format_id)
+CREATE TABLE website.format_size (
+    format_id TEXT REFERENCES website.format (format_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     size_id TEXT REFERENCES website.size (size_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-	PRIMARY KEY (image_format_id, size_id),
+	PRIMARY KEY (format_id, size_id),
     width INTEGER CHECK (width >= 0),
     height INTEGER CHECK (height >= 0)
 );

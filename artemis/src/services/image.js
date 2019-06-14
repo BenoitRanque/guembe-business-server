@@ -11,18 +11,18 @@ function removeImageSizes (image_id, sizes) {
   })
 }
 
-async function getImageSizes (image_format_id) {
+async function getImageSizes (format_id) {
   const { rows: sizes } = await db.query(`
     SELECT
-      website.image_format.image_format_id,
-      website.image_format_size.size_id,
-      website.image_format_size.width,
-      website.image_format_size.height
-    FROM website.image_format
-    LEFT JOIN website.image_format_size ON website.image_format.image_format_id = website.image_format_size.image_format_id
-    WHERE website.image_format.image_format_id = $1
+      website.format.format_id,
+      website.format_size.size_id,
+      website.format_size.width,
+      website.format_size.height
+    FROM website.format
+    LEFT JOIN website.format_size ON website.format.format_id = website.format_size.format_id
+    WHERE website.format.format_id = $1
     ORDER BY width DESC
-  `, [ image_format_id ])
+  `, [ format_id ])
 
   return sizes
 }

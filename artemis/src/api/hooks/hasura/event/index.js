@@ -149,9 +149,9 @@ app.use(function (req, res, next) {
 
 app.post('/website/image/delete', express.json(), async (req, res) => {
   const image_id = req.body.event.data.old.image_id
-  const image_format_id = req.body.event.data.old.image_format_id
+  const format_id = req.body.event.data.old.format_id
 
-  const sizes= await getImageSizes(image_format_id)
+  const sizes= await getImageSizes(format_id)
 
   removeImageSizes(image_id, sizes)
 

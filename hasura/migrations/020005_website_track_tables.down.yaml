@@ -15,12 +15,12 @@
   type: untrack_table
 - args:
     table:
-      name: image_format
+      name: format
       schema: website
   type: untrack_table
 - args:
     table:
-      name: image_format_size
+      name: format_size
       schema: website
   type: untrack_table
 - args:
