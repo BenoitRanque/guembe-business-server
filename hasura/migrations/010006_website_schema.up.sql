@@ -27,7 +27,7 @@ CREATE TABLE website.format_size (
 
 INSERT INTO website.format (format_id, name) VALUES
     ('card', 'Tarjeta'),
-    ('slide', 'Carousel'),
+    ('wide', 'Ancho'),
     ('background', 'Fondo');
 INSERT INTO website.format_size (format_id, size_id, width, height) VALUES
     ('card', 'xl', 800, 600),
@@ -40,11 +40,11 @@ INSERT INTO website.format_size (format_id, size_id, width, height) VALUES
     ('background', 'md', 840, 420),
     ('background', 'sm', 560, 280),
     ('background', 'xs', 280, 140),
-    ('slide', 'xl', 1400, 700),
-    ('slide', 'lg', 1120, 560),
-    ('slide', 'md', 840, 420),
-    ('slide', 'sm', 560, 280),
-    ('slide', 'xs', 280, 140);
+    ('wide', 'xl', 1400, 700),
+    ('wide', 'lg', 1120, 560),
+    ('wide', 'md', 840, 420),
+    ('wide', 'sm', 560, 280),
+    ('wide', 'xs', 280, 140);
 
 CREATE TABLE website.image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -94,7 +94,6 @@ CREATE TABLE website.section (
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
     UNIQUE(page_id, index),
-    slider BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -114,7 +113,7 @@ CREATE TABLE website.element (
         ON UPDATE CASCADE
         ON DELETE SET NULL,
     external_link TEXT,
-    -- listing lind added after webstore schema created
+    -- listing link added after webstore schema created
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
