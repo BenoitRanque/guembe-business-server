@@ -2,7 +2,7 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const app = express()
 
-const parseSession = require('../../../../utils/middlewares/parseSession')
+const parseSession = require('middlewares/parseSession')
 
 app.get('/', cookieParser(), parseSession, function (req, res, next) {
   const grants = {

@@ -3,7 +3,9 @@ const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 const uuid = require('uuid/v4')
 const bcrypt = require('bcryptjs')
-const { ForbiddenError, NotFoundError } = require('../../utils/errors')
+const { ForbiddenError, NotFoundError } = require('utils/errors')
+const db = require('utils/db')
+const oauth = require('utils/oauth')
 
 const app = express()
 
@@ -23,8 +25,8 @@ app.get('/oauth/:provider', async function (req, res, next) {
     clientState: req.query
   })
 
-  if (req.oauth.hasOwnProperty(req.params.provider)) {
-    return res.redirect(req.oauth[req.params.provider].getAuthenticationURL(state))
+  if (oauth.hasOwnProperty(req.params.provider)) {
+    return res.redirect(oauth[req.params.provider].getAuthenticationURL(state))
   }
   next(new NotFoundError())
 })
@@ -42,14 +44,14 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
     return next(new BadRequestError())
   }
 
-  if (!req.oauth.hasOwnProperty(provider)) {
+  if (!oauth.hasOwnProperty(provider)) {
     return next(new NotFoundError())
   }
 
   try {
 
-    const accessToken = await req.oauth[provider].getAccessToken(req.query.code)
-    const userOAuthAccount = await req.oauth[provider].getUserOAuthAccount(accessToken)
+    const accessToken = await oauth[provider].getAccessToken(req.query.code)
+    const userOAuthAccount = await oauth[provider].getUserOAuthAccount(accessToken)
 
     const query = `
       SELECT account.user.user_id, account.user.user_type_id
@@ -57,16 +59,16 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
       WHERE oauth_provider_id = $1
       AND oauth_id = $2
     `
-    let { rows: [ userAccount ] } = await req.db.query(query, [
+    let { rows: [ userAccount ] } = await db.query(query, [
       userOAuthAccount.oauth_provider_id,
       userOAuthAccount.oauth_id
     ])
 
     if (!userAccount) {
-      userAccount = await createAccountUser({ ...userOAuthAccount, user_type_id: 'client' }, req.db)
+      userAccount = await createAccountUser({ ...userOAuthAccount, user_type_id: 'client' }, db)
     }
 
-    const session = await getUserSession(userAccount, req.db)
+    const session = await getUserSession(userAccount, db)
     const token = getSessionToken(session)
 
     setSessionCookie(token, res)
@@ -91,12 +93,12 @@ app.post('/login', express.json(), async function (req, res, next) {
     WHERE username = $1
   `
 
-  const { rows: [ user ] } = await req.db.query(query, [ username ])
+  const { rows: [ user ] } = await db.query(query, [ username ])
 
   if (user) {
     const valid = await bcrypt.compare(password, user.password)
     if (valid) {
-      const session = await getUserSession(user, req.db)
+      const session = await getUserSession(user, db)
       const token = getSessionToken(session)
 
       setSessionCookie(token, res)

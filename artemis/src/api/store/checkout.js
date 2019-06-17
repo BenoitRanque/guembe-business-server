@@ -1,7 +1,7 @@
 
-const updateLocalPayment = require('../../services/updateLocalPayment')
-const khipu = require('../../utils/khipu')
-const { BadRequestError, InternalServerError } = require('../../utils/errors')
+const updateLocalPayment = require('services/updateLocalPayment')
+const khipu = require('utils/khipu')
+const { BadRequestError, InternalServerError } = require('utils/errors')
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 

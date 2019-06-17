@@ -3,7 +3,7 @@ const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 const uuid = require('uuid/v4')
 const bcrypt = require('bcryptjs')
-const { ForbiddenError, NotFoundError } = require('../../utils/errors')
+const { ForbiddenError, NotFoundError } = require('utils/errors')
 
 const app = express()
 

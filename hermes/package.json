@@ -1,7 +1,7 @@
 {
-  "name": "artemis",
+  "name": "hermes",
   "version": "1.0.0",
-  "description": "Artemis Server",
+  "description": "Hermes Server",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,17 +9,15 @@
   "author": "Benoit Ranque",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.4",
     "corser": "^2.0.1",
     "express": "^4.16.4",
     "express-throttle-bandwidth": "^1.0.1",
     "helmet": "^3.18.0",
-    "http-proxy-middleware": "^0.19.1",
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.1",
     "pg": "^7.9.0",
+    "sharp": "^0.22.1",
     "uuid": "^3.3.2"
   }
 }

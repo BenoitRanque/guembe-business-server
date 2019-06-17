@@ -1,8 +1,9 @@
 const fs = require('fs')
 const express = require('express')
 const app = express()
-const izi = require('../../../../utils/izi')
-const { getImageSizes, removeImageSizes  } = require('../../../../services/image')
+const izi = require('utils/izi')
+const getImageSizes = require('services/image/getImageSizes')
+const removeImageSizes = require('services/image/removeImageSizes')
 
 app.use(function (req, res, next) {
   // this is a security vulnerability. Make sure to authorize

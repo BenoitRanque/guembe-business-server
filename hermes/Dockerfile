@@ -12,8 +12,9 @@ USER node
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
-COPY ./artemis/package*.json ./
-COPY ./artemis/yarn.lock ./
+COPY ./hermes/package*.json ./
+COPY ./hermes/yarn.lock ./
+
 
 # build time argument to add tools for development
 ARG NODE_ENV=production
@@ -27,7 +28,7 @@ RUN yarn install
 RUN if [ "$NODE_ENV" = "development" ] ; then npm install -g nodemon ; fi
 
 # COPY always copies files as root. change owner after copy
-COPY ./artemis/src ./src
+COPY ./hermes/src ./src
 COPY ./node_modules ./src/node_modules
 RUN chown -R node:node ./src/*
 

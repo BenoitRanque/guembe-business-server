@@ -1,5 +1,5 @@
-const updateLocalPayment = require('../../../services/updateLocalPayment')
-const khipu = require('../../../utils/khipu')
+const updateLocalPayment = require('services/updateLocalPayment')
+const khipu = require('utils/khipu')
 const express = require('express')
 
 const app = express()

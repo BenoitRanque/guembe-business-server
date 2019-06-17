@@ -12,6 +12,10 @@ services:
       - ./public/static:/usr/share/nginx/html
       - ./public/certbot:/var/www/certbot
       - ./nginx/certs:/etc/letsencrypt
+    depends_on:
+      - graphql-engine
+      - hermes
+      - artemis
     networks:
       - app-network
   # deactivated certbot for now. Current certificated will be valid for a while
@@ -78,16 +82,16 @@ services:
   artemis:
     image: artemis:prod
     build:
-      context: ./artemis
+      context: .
+      dockerfile: ./artemis/Dockerfile
       args:
         NODE_ENV: production
     command: node src/index.js
     expose:
       - "8080"
-    ports:
-      - "9090:8080"
     restart: always
     environment:
+      PORT: 8080
       NODE_ENV: production
       PGHOST: postgres
       PGUSER: ${PG_USERNAME}
@@ -95,7 +99,6 @@ services:
       PGPASSWORD: ${PG_PASSWORD}
       PGPORT: 5432
       PUBLIC_HOSTNAME: ${PUBLIC_HOSTNAME}
-      FILE_UPLOAD_DIRECTORY: /usr/app/uploads
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
       OAUTH_PROVIDER_FACEBOOK_CLIENT_ID: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_ID}
       OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET: ${OAUTH_PROVIDER_FACEBOOK_CLIENT_SECRET}
@@ -109,19 +112,36 @@ services:
           - IZI_PUBLIC_KEY
     depends_on:
       - postgres
+    networks:
+      - app-network
+  hermes:
+    image: hermes:prod
+    build:
+      context: .
+      dockerfile: ./hermes/Dockerfile
+      args:
+        NODE_ENV: production
+    command: node src/index.js
+    expose:
+      - "8080"
+    restart: always
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+      PGHOST: postgres
+      PGUSER: ${PG_USERNAME}
+      PGDATABASE: ${PG_DATABASE}
+      PGPASSWORD: ${PG_PASSWORD}
+      PGPORT: 5432
+      PUBLIC_HOSTNAME: ${PUBLIC_HOSTNAME}
+      FILE_UPLOAD_DIRECTORY: /usr/app/uploads
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+    depends_on:
+      - postgres
     volumes:
       - ./public/static/uploads:/usr/app/uploads:rw
     networks:
       - app-network
-# volumes:
-#   certbot-etc:
-#   certbot-var:
-  # web-root:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: ./public
-  #     o: bind
 secrets:
   IZI_PUBLIC_KEY:
     file: ./nginx/certs/IZI_PUBLIC_KEY.pub

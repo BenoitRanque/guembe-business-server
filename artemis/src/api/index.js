@@ -1,21 +1,16 @@
 const express = require('express')
-const CORSPolicy = require('../utils/middlewares/CORSPolicy')
-const setCSRFToken = require('../utils/middlewares/setCSRFToken')
-const db = require('../utils/db')
-const oauth = require('../utils/oauth')
+const CORSPolicy = require('middlewares/CORSPolicy')
+const setCSRFToken = require('middlewares/setCSRFToken')
 const cookieParser = require('cookie-parser')
-
-express.request.db = db
-express.request.oauth = oauth
 
 const app = express()
 
 app.use(function (req, res, next) {
   console.log(`request of type`, req.method)
+  console.log(`request of type`, req.path)
   next()
 })
 
-app.use(CORSPolicy)
 // app.use(setCSRFToken)
 
 // app.use(cookieParser(), function (req, res, next) {
@@ -31,8 +26,8 @@ app.use(CORSPolicy)
 app.use('/auth', require('./auth'))
 app.use('/store', require('./store'))
 
-app.use('/graphql', require('./graphql'))
-app.use('/image', require('./image'))
+// app.use('/graphql', require('./graphql'))
+// app.use('/image', require('./image'))
 app.use('/hooks', require('./hooks'))
 
 module.exports = app

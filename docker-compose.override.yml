@@ -15,12 +15,18 @@ services:
     environment:
       NODE_ENV: development
     volumes:
-      - ./artemis/src:/usr/app/src:ro
-    # volumes:
-    #   - type: bind
-    #     source: ./business-logic/src/
-    #     target: /usr/app/src/
-    #     consistency: cached
+      - ./artemis/src:/usr/app/src
+      - ./node_modules:/usr/app/src/node_modules
+  hermes:
+    image: hermes:dev
+    build:
+      args:
+        NODE_ENV: development
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./hermes/src:/usr/app/src
+      - ./node_modules:/usr/app/src/node_modules
 volumes:
   postgres:
   pgadmin:

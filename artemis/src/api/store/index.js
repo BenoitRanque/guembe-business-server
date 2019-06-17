@@ -1,6 +1,6 @@
 const express = require('express')
-const parseSession = require('../../utils/middlewares/parseSession')
-const requireSessionRole = require('../../utils/middlewares/requireSessionRole')
+const parseSession = require('middlewares/parseSession')
+const requireSessionRole = require('middlewares/requireSessionRole')
 const cookieParser = require('cookie-parser')
 
 const app = express()
