@@ -75,8 +75,9 @@ services:
       HASURA_GRAPHQL_DATABASE_URL: postgres://${PG_USERNAME}:${PG_PASSWORD}@postgres:5432/${PG_DATABASE}
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
       HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
-      HASURA_GRAPHQL_AUTH_HOOK: http://artemis:8080/api/v1/hooks/hasura/auth
+      HASURA_GRAPHQL_AUTH_HOOK: http://artemis:8080/hooks/hasura/auth
       HASURA_GRAPHQL_AUTH_HOOK_MODE: GET
+      HASURA_GRAPHQL_CORS_DOMAIN: "https://chuturubi.com, http://localhost:8080, http://localhost:8081, http://localhost:8082, http://localhost:9695"
     networks:
       - app-network
   artemis:

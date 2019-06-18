@@ -50,7 +50,7 @@ const upload = multer({
 
 const app = express()
 
-app.post('/upload', cookieParser(), parseSession, requireSessionRole(['administrator']), upload.single('image'), async (req, res, next) => {
+app.post('/image', cookieParser(), parseSession, requireSessionRole(['administrator']), upload.single('image'), async (req, res, next) => {
   console.log('uploading image...')
 
   if (!req.file) {

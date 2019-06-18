@@ -93,7 +93,7 @@ CREATE TABLE website.section (
 	page_id UUID NOT NULL REFERENCES website.page (page_id)
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
-    UNIQUE(page_id, index),
+    UNIQUE(page_id, index) DEFERRABLE INITIALLY IMMEDIATE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -107,7 +107,7 @@ CREATE TABLE website.element (
     section_id UUID NOT NULL REFERENCES website.section (section_id)
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
-    UNIQUE (section_id, index),
+    UNIQUE (section_id, index) DEFERRABLE INITIALLY IMMEDIATE,
     size_id TEXT NOT NULL REFERENCES website.size (size_id),
     internal_link TEXT REFERENCES website.page (path)
         ON UPDATE CASCADE
