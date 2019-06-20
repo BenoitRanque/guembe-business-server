@@ -61,7 +61,9 @@ CREATE TRIGGER website_image_set_updated_at BEFORE UPDATE ON website.image
 
 CREATE TABLE website.page (
     page_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    path TEXT UNIQUE NOT NULL,
+    path TEXT NOT NULL,
+    preliminary BOOLEAN NOT NULL DEFAULT false,
+    UNIQUE (path, preliminary),
 	name TEXT NOT NULL,
     image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -94,6 +96,7 @@ CREATE TABLE website.section (
         ON DELETE CASCADE,
     index INTEGER NOT NULL CHECK (index >= 0),
     UNIQUE(page_id, index) DEFERRABLE INITIALLY IMMEDIATE,
+    fullwidth BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),

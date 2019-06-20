@@ -27,6 +27,15 @@ services:
     volumes:
       - ./hermes/src:/usr/app/src
       - ./node_modules:/usr/app/src/node_modules
+  # hades:
+  #   image: hades:dev
+  #   build:
+  #     args:
+  #       NODE_ENV: development
+  #   environment:
+  #     NODE_ENV: development
+  #   environment:
+  #     NODE_ENV: development
 volumes:
   postgres:
   pgadmin:
