@@ -31,7 +31,6 @@ CREATE TABLE webstore.product_i18n (
 CREATE TRIGGER webstore_product_i18n_set_updated_at BEFORE UPDATE ON webstore.product_i18n
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-
 CREATE TABLE webstore.listing (
     listing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,

@@ -61,9 +61,9 @@ CREATE TRIGGER website_image_set_updated_at BEFORE UPDATE ON website.image
 
 CREATE TABLE website.page (
     page_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    path TEXT NOT NULL,
-    preliminary BOOLEAN NOT NULL DEFAULT false,
-    UNIQUE (path, preliminary),
+    path TEXT UNIQUE, -- nullable because preliminary pages will not have path
+    preliminary_path TEXT,
+    CHECK ((path IS NOT NULL AND preliminary_path IS NULL) OR (path IS NULL AND preliminary_path IS NOT NULL)),
 	name TEXT NOT NULL,
     image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
