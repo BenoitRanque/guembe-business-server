@@ -35,7 +35,6 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
   const provider = req.params.provider
 
   const state = decodeState(req.query.state)
-
   const stateToken = state.xsrfToken
   const cookieToken = req.cookies['XSRF-TOKEN-OAUTH']
 
@@ -75,12 +74,19 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
 
     const [ header, payload ] = token.split('.')
 
-    return res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/?session=${header}.${payload}`)
+    return res.redirect(`https://${process.env.PUBLIC_HOSTNAME}${getCallback(state)}?session=${header}.${payload}`)
 
   } catch (error) {
     console.error(error)
-    // redirect to home page
-    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}/`)
+    // redirect to callback page
+    res.redirect(`https://${process.env.PUBLIC_HOSTNAME}${getCallback(state)}`)
+  }
+
+  function getCallback (state) {
+    if (state && state.clientState && state.clientState.callback) {
+      return decodeURIComponent(state.clientState.callback)
+    }
+    return ''
   }
 })
 

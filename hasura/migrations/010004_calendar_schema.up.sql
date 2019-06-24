@@ -2,10 +2,17 @@ BEGIN;
 CREATE SCHEMA calendar;
 
 CREATE TABLE calendar.weekday (
-    weekday_id INTEGER PRIMARY KEY
+    weekday_id INTEGER PRIMARY KEY,
+    name TEXT
 );
-INSERT INTO calendar.weekday (weekday_id)
-VALUES (0), (1), (2), (3), (4), (5), (6);
+INSERT INTO calendar.weekday (weekday_id, name) VALUES
+    (0, 'Domingo'),
+    (1, 'Lunes'),
+    (2, 'Martes'),
+    (3, 'Miercoles'),
+    (4, 'Jueves'),
+    (5, 'Viernes'),
+    (6, 'Sabado');
 
 CREATE TABLE calendar.weekday_i18n (
     weekday_id INTEGER REFERENCES calendar.weekday (weekday_id)

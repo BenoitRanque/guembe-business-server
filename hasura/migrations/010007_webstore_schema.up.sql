@@ -172,7 +172,7 @@ SELECT
     webstore.listing.supply AS supply,
     COALESCE(SUM(webstore.sale_listing.quantity), 0) AS used,
     webstore.listing.supply - COALESCE(SUM(webstore.sale_listing.quantity), 0) AS remaining,
-    ((webstore.listing.supply - COALESCE(SUM(webstore.sale_listing.quantity), 0)) > 0)::text AS available
+    ((webstore.listing.supply - COALESCE(SUM(webstore.sale_listing.quantity), 0)) > 0)::boolean AS available
 FROM webstore.listing
 LEFT JOIN webstore.sale_listing
     ON webstore.listing.listing_id = webstore.sale_listing.listing_id
