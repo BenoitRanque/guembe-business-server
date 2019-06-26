@@ -1,5 +1,5 @@
 const express = require('express')
-const db = require('utils/db')
+const pg = require('utils/pg')
 const { BadRequestError } = require('utils/errors')
 
 const app = express()
@@ -15,7 +15,7 @@ app.post('/', express.json(), async function (req, res, next) {
 
     if ([page_id, index_a, index_b].includes(null)) throw new BadRequestError(`Missing parameters. Got ${JSON.stringify(req.body)}`)
 
-    await db.query(`
+    await pg.query(`
       UPDATE website.section
       SET index = swap.new_index
       FROM (VALUES ($1::int, $2::int), ($2::int, $1::int)) AS swap(old_index, new_index)

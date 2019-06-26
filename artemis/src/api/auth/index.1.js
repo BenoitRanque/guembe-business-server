@@ -111,14 +111,14 @@ function decodeState (state) {
   return JSON.parse(Buffer.from(state, 'base64').toString())
 }
 
-async function loadClientAccount (clientAuth, db) {
+async function loadClientAccount (clientAuth, pg) {
   const query = `
     SELECT client_id, name, email, first_name, middle_name, last_name, authentication_provider_name
     FROM store.client
     WHERE authentication_provider_name = $1
     AND authentication_provider_account_id = $2
   `
-  const { rows: [ client ] } = await db.query(query, [
+  const { rows: [ client ] } = await pg.query(query, [
     clientAuth.authentication_provider_name,
     clientAuth.authentication_provider_account_id
   ])
@@ -126,7 +126,7 @@ async function loadClientAccount (clientAuth, db) {
   return client ? client : null
 }
 
-async function createClientAccount (clientAuth, db) {
+async function createClientAccount (clientAuth, pg) {
   const query = `
     INSERT INTO store.client
       (name, email, first_name, middle_name, last_name, authentication_provider_name, authentication_provider_account_id)
@@ -137,7 +137,7 @@ async function createClientAccount (clientAuth, db) {
   `
 
   // order here must be same as above. Be careful
-  const { rows: [ client ] } = await db.query(query, [
+  const { rows: [ client ] } = await pg.query(query, [
     clientAuth.name,
     clientAuth.email,
     clientAuth.first_name,
@@ -383,9 +383,9 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
         return next(new NotFoundError())
     }
 
-    clientAccount = await loadClientAccount(clientAuth, req.db)
+    clientAccount = await loadClientAccount(clientAuth, req.pg)
     if (clientAccount === null) {
-      clientAccount = await createClientAccount(clientAuth, req.db)
+      clientAccount = await createClientAccount(clientAuth, req.pg)
     }
 
     const session = getClientSession(clientAccount)
@@ -408,7 +408,7 @@ app.post('/login', express.json(), async function (req, res, next) {
     FROM staff.user
     WHERE username = $1
   `
-  const { rows: [ user ] } = await req.db.query(query, [ username ])
+  const { rows: [ user ] } = await req.pg.query(query, [ username ])
 
   if (user) {
     const valid = await bcrypt.compare(password, user.password)
@@ -420,7 +420,7 @@ app.post('/login', express.json(), async function (req, res, next) {
         LEFT JOIN staff.role ON (staff.user_role.role_id = staff.role.role_id)
         WHERE user_id = $1
       `
-      const { rows: roleRows } = await req.db.query(query, [user_id])
+      const { rows: roleRows } = await req.pg.query(query, [user_id])
 
       const roles = ['user']
 

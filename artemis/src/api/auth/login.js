@@ -10,14 +10,14 @@ app.post('/login', express.json(), function (req, res, next) {
     WHERE ${username !== null ? 'username' : 'email'} = $1
   `
 
-  const { rows: [ user ] } = await req.db.query(query, [
+  const { rows: [ user ] } = await req.pg.query(query, [
     username !== null ? username : email
   ])
 
   if (user) {
     const valid = await bcrypt.compare(password, user.password)
     if (valid) {
-      const session = await getUserSession(user, req.db)
+      const session = await getUserSession(user, req.pg)
       const token = getSessionToken(session)
 
       setSessionCookie(token, res)

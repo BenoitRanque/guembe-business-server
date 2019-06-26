@@ -68,8 +68,8 @@ app.get('*', (req, res) => {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
   // res.setHeader('Content-Security-Policy', 'default-src https:')
 
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sandbox
-  // res.setHeader('Content-Security-Policy', 'sandbox') // this will lockdown your server!!!
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/sanpgox
+  // res.setHeader('Content-Security-Policy', 'sanpgox') // this will lockdown your server!!!
   // here are a few that you might like to consider adding to your CSP
   // object-src, media-src, script-src, frame-src, unsafe-inline
 

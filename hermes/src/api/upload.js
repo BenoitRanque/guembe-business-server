@@ -12,7 +12,7 @@ const getPlaceholder = require('services/image/getPlaceholder')
 
 const { BadRequestError } = require('utils/errors')
 
-const db = require('utils/db')
+const pg = require('utils/pg')
 
 // create image directory if not exists
 if (!fs.existsSync(`${process.env.FILE_UPLOAD_DIRECTORY}/image`)) {
@@ -77,7 +77,7 @@ app.post('/image', cookieParser(), parseSession, requireSessionRole(['administra
 
     const placeholder = await getPlaceholder(req.file.buffer, sizes[0])
 
-    await db.query(`
+    await pg.query(`
       INSERT INTO website.image
         (image_id, format_id, name, placeholder, created_by_user_id, updated_by_user_id)
       VALUES ($1, $2, $3, $4, $5, $6)

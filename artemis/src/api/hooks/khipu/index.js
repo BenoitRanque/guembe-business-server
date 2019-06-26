@@ -14,7 +14,7 @@ app.post('/notify', express.urlencoded({ extended: false }), async function (req
       throw new Error(`Unexpected Khipu Notification Api Version: ${api_version}`)
     }
     updatedRemotePayment = await khipu.getPayments({ notification_token })
-    updatedLocalPayment = await updateLocalPayment(updatedRemotePayment.transaction_id, updatedRemotePayment, req.db)
+    updatedLocalPayment = await updateLocalPayment(updatedRemotePayment.transaction_id, updatedRemotePayment, req.pg)
     // respond immediately
     res.status(200).end('Ok')
   } catch (error) {

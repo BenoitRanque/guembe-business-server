@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const uuid = require('uuid/v4')
 const bcrypt = require('bcryptjs')
 const { ForbiddenError, NotFoundError } = require('utils/errors')
-const db = require('utils/db')
+const pg = require('utils/pg')
 const oauth = require('utils/oauth')
 
 const app = express()
@@ -58,16 +58,16 @@ app.get('/oauth/:provider/callback', express.urlencoded({ extended: false }), as
       WHERE oauth_provider_id = $1
       AND oauth_id = $2
     `
-    let { rows: [ userAccount ] } = await db.query(query, [
+    let { rows: [ userAccount ] } = await pg.query(query, [
       userOAuthAccount.oauth_provider_id,
       userOAuthAccount.oauth_id
     ])
 
     if (!userAccount) {
-      userAccount = await createAccountUser({ ...userOAuthAccount, user_type_id: 'client' }, db)
+      userAccount = await createAccountUser({ ...userOAuthAccount, user_type_id: 'client' }, pg)
     }
 
-    const session = await getUserSession(userAccount, db)
+    const session = await getUserSession(userAccount, pg)
     const token = getSessionToken(session)
 
     setSessionCookie(token, res)
@@ -99,12 +99,12 @@ app.post('/login', express.json(), async function (req, res, next) {
     WHERE username = $1
   `
 
-  const { rows: [ user ] } = await db.query(query, [ username ])
+  const { rows: [ user ] } = await pg.query(query, [ username ])
 
   if (user) {
     const valid = await bcrypt.compare(password, user.password)
     if (valid) {
-      const session = await getUserSession(user, db)
+      const session = await getUserSession(user, pg)
       const token = getSessionToken(session)
 
       setSessionCookie(token, res)
@@ -123,7 +123,7 @@ app.post('/logout', function (req, res, next) {
   res.status(204).end()
 })
 
-async function getUserSession (user, db) {
+async function getUserSession (user, pg) {
   const { user_id, user_type_id } = user
 
   const roles = [ user_type_id ]
@@ -136,7 +136,7 @@ async function getUserSession (user, db) {
       LEFT JOIN account.role ON (account.user_role.role_id = account.role.role_id)
       WHERE user_id = $1
     `
-    const { rows: roleRows } = await db.query(query, [user_id])
+    const { rows: roleRows } = await pg.query(query, [user_id])
 
 
     if (roleRows.length) {
@@ -191,7 +191,7 @@ function decodeState (state) {
   return JSON.parse(Buffer.from(state, 'base64').toString())
 }
 
-async function createAccountUser (user, db) {
+async function createAccountUser (user, pg) {
 
   const query = `
     INSERT INTO account.user (
@@ -205,7 +205,7 @@ async function createAccountUser (user, db) {
   `
 
   // order here must be same as above. Be careful
-  const { rows: [ client ] } = await db.query(query, [
+  const { rows: [ client ] } = await pg.query(query, [
     user.user_type_id,
     user.oauth_provider_id ? user.oauth_id : user.username,
     user.oauth_provider_id ? user.oauth_provider_id : user.password,

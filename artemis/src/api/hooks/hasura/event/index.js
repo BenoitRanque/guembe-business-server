@@ -23,12 +23,12 @@ app.use(function (req, res, next) {
 //   let localInvoice = null
 
 //   try {
-//     const alreadyEmited = await invoiceAlreadyEmited(invoice.invoice_id, req.db)
+//     const alreadyEmited = await invoiceAlreadyEmited(invoice.invoice_id, req.pg)
 //     if (alreadyEmited) {
 //       throw new Error(`Invoice ${invoice.invoice_id} already emitted: ${JSON.stringify(invoice)}`)
 //     }
-//     const remoteInvoice = await createRemoteInvoice(invoice.invoice_id, req.db)
-//     const localInvoice = await updateLocalInvoice(invoice.invoice_id, remoteInvoice, req.db)
+//     const remoteInvoice = await createRemoteInvoice(invoice.invoice_id, req.pg)
+//     const localInvoice = await updateLocalInvoice(invoice.invoice_id, remoteInvoice, req.pg)
 //   } catch (error) {
 //     res.status(500).end()
 //     console.error(error)
@@ -38,9 +38,9 @@ app.use(function (req, res, next) {
 //   res.status(200).end()
 // })
 
-// async function createRemoteInvoice (invoice_id, db) {
-//   const { comprador, razonSocial, actividadEconomica } = await getInvoiceInformation(invoice_id, db)
-//   const listaItems = await getInvoiceItems(invoice_id, db)
+// async function createRemoteInvoice (invoice_id, pg) {
+//   const { comprador, razonSocial, actividadEconomica } = await getInvoiceInformation(invoice_id, pg)
+//   const listaItems = await getInvoiceItems(invoice_id, pg)
 
 //   const { factura } = await izi.facturas({
 //     emisor: process.env.IZI_NIT_EMISOR,
@@ -53,8 +53,8 @@ app.use(function (req, res, next) {
 //   return factura
 // }
 
-// async function invoiceAlreadyEmited (invoice_id, db) {
-//   const { rows } = await db.query(`
+// async function invoiceAlreadyEmited (invoice_id, pg) {
+//   const { rows } = await pg.query(`
 //     SELECT 1
 //     FROM store.invoice
 //     WHERE store.invoice.invoice_id = $1
@@ -64,9 +64,9 @@ app.use(function (req, res, next) {
 //   return rows.length > 0
 // }
 
-// async function getInvoiceInformation (invoice_id, db) {
+// async function getInvoiceInformation (invoice_id, pg) {
 //   // note the double quotation marks "" around the column names, to preserve upper/lowercase
-//   const { rows: [ information ] } = await db.query(`
+//   const { rows: [ information ] } = await pg.query(`
 //     SELECT
 //       store.invoice.economic_activity_id AS "actividadEconomica",
 //       store.purchase.buyer_business_name AS "razonSocial",
@@ -79,9 +79,9 @@ app.use(function (req, res, next) {
 //   return information
 // }
 
-// async function getInvoiceItems (invoice_id, db) {
+// async function getInvoiceItems (invoice_id, pg) {
 //   // note the double quotation marks "" around the column names, to preserve upper/lowercase
-//   const { rows: items } = await db.query(`
+//   const { rows: items } = await pg.query(`
 //     SELECT
 //       store.product.public_name AS "articulo",
 //       store.listing_product.price AS "precioUnitario",
@@ -102,7 +102,7 @@ app.use(function (req, res, next) {
 //   }))
 // }
 
-// async function updateLocalInvoice (invoice_id, update, db) {
+// async function updateLocalInvoice (invoice_id, update, pg) {
 //   // check if all update properties are valid fields
 //   const allowedUpdateColumns = [
 //     'id',
@@ -135,7 +135,7 @@ app.use(function (req, res, next) {
 //     throw new Error(`Atempted to update local invoice with no update columns specified`)
 //   }
 
-//   const { rows: [ updatedInvoice ] } = await db.query(`
+//   const { rows: [ updatedInvoice ] } = await pg.query(`
 //     UPDATE store.invoice
 //     SET ${updateFields.map((column, index) => `${column} = $${index + 2}`).join(', ')}
 //     WHERE store.invoice.invoice_id = $1

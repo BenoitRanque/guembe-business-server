@@ -97,6 +97,7 @@ CREATE TABLE webstore.sale_listing (
         ON DELETE CASCADE,
     listing_id UUID NOT NULL REFERENCES webstore.listing (listing_id)
         ON DELETE RESTRICT,
+    PRIMARY KEY (sale_id, listing_id),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
@@ -176,12 +177,15 @@ SELECT
 FROM webstore.listing
 LEFT JOIN webstore.sale_listing
     ON webstore.listing.listing_id = webstore.sale_listing.listing_id
-    AND webstore.sale_listing.sale_id IN (
+    -- double negation as we want to use stock unless there is a payment
+    -- AND the payment is neihter pending nor valid
+    -- meaning we block even if there is no payment yet for the sale
+    AND webstore.sale_listing.sale_id NOT IN (
         SELECT webstore.sale_payment.sale_id
         FROM webstore.sale_payment
         LEFT JOIN accounting.payment
             ON webstore.sale_payment.payment_id = accounting.payment.payment_id
-        WHERE accounting.payment.status IN ('PENDING', 'COMPLETED')
+        WHERE accounting.payment.status NOT IN ('PENDING', 'COMPLETED')
     )
 WHERE webstore.listing.supply IS NOT NULL
 GROUP BY webstore.listing.listing_id, webstore.listing.supply;
@@ -278,6 +282,7 @@ CREATE TRIGGER update_webstore_sale_total
     AFTER INSERT OR UPDATE OR DELETE ON webstore.sale_listing
     FOR EACH ROW EXECUTE FUNCTION webstore.update_sale_total();
 
+-- NOTE: possibly remove this trigger
 CREATE FUNCTION webstore.sale_listing_verify_availability()
 RETURNS TRIGGER AS $$
 BEGIN
