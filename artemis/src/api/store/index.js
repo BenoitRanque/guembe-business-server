@@ -22,9 +22,9 @@ app.post('/checkout', requireSessionRole(['client']), async function checkout (r
       throw new BadRequestError('Malformed client id')
     }
 
-    const paymentURL = await webstoreCheckout({ user_id, client_id })
+    const checkoutResponse = await webstoreCheckout({ user_id, client_id })
 
-    res.status(200).json({ paymentURL })
+    res.status(200).json(checkoutResponse)
   } catch (error) {
     console.log(error)
     next(error)
