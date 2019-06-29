@@ -4,6 +4,7 @@ DO $$
 DECLARE
     admin_user_id UUID;
     locale_1_id TEXT := 'es';
+    locale_2_id TEXT := 'en';
     lifetime_1_id UUID;
     lifetime_2_id UUID;
     lifetime_3_id UUID;
@@ -243,6 +244,7 @@ INSERT INTO webstore.listing (
   available_from,
   available_to,
   supply,
+  lifetime_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
@@ -250,6 +252,7 @@ INSERT INTO webstore.listing (
   '2019-01-01',
   '2019-12-31',
   null,
+  lifetime_1_id,
   admin_user_id,
   admin_user_id
 ) RETURNING listing_id INTO listing_1_id;
@@ -258,7 +261,6 @@ INSERT INTO webstore.listing_product (
   product_id,
   quantity,
   price,
-  lifetime_id,
   created_by_user_id,
   updated_by_user_id
 ) VALUES (
@@ -266,7 +268,6 @@ INSERT INTO webstore.listing_product (
   product_1_id,
   1,
   14000,
-  lifetime_1_id,
   admin_user_id,
   admin_user_id
 );
@@ -276,6 +277,15 @@ VALUES (
   locale_1_id,
   'Ingreso Adulto',
   'Incluye Un ingreso para adulto',
+  admin_user_id,
+  admin_user_id
+);
+INSERT INTO webstore.listing_i18n (listing_id, locale_id, name, description, created_by_user_id, updated_by_user_id)
+VALUES (
+  listing_1_id,
+  locale_2_id,
+  'Adult Entry',
+  'Entrance for 1 adult',
   admin_user_id,
   admin_user_id
 );

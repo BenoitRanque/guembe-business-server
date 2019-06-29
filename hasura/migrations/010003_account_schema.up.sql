@@ -18,6 +18,10 @@ VALUES ('google'), ('facebook');
 CREATE TABLE account.user (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_type_id TEXT NOT NULL REFERENCES account.user_type (user_type_id),
+    locale_id TEXT NOT NULL DEFAULT 'es'
+        REFERENCES i18n.locale(locale_id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
     username TEXT UNIQUE,
     password TEXT,
     oauth_id TEXT,

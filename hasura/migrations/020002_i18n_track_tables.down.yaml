@@ -3,8 +3,3 @@
       name: locale
       schema: i18n
   type: untrack_table
-- args:
-    table:
-      name: message
-      schema: i18n
-  type: untrack_table

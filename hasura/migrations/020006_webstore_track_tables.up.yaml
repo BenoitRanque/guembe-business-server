@@ -1,16 +1,4 @@
 - args:
-    name: aquired_product
-    schema: webstore
-  type: add_existing_table_or_view
-- args:
-    name: aquired_product_usable
-    schema: webstore
-  type: add_existing_table_or_view
-- args:
-    name: aquired_product_use
-    schema: webstore
-  type: add_existing_table_or_view
-- args:
     name: cart_listing
     schema: webstore
   type: add_existing_table_or_view

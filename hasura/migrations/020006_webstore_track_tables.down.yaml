@@ -1,20 +1,5 @@
 - args:
     table:
-      name: aquired_product
-      schema: webstore
-  type: untrack_table
-- args:
-    table:
-      name: aquired_product_usable
-      schema: webstore
-  type: untrack_table
-- args:
-    table:
-      name: aquired_product_use
-      schema: webstore
-  type: untrack_table
-- args:
-    table:
       name: cart_listing
       schema: webstore
   type: untrack_table

@@ -37,6 +37,7 @@ CREATE TABLE webstore.listing (
     available_from DATE NOT NULL, -- when this will be available in webstore
     available_to DATE NOT NULL,
     CHECK (available_from <= available_to),
+    lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
     supply INTEGER CHECK (supply IS NULL OR supply > 0),
     total INTEGER NOT NULL CHECK (total >= 0) DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -71,8 +72,7 @@ CREATE TABLE webstore.listing_product (
         ON DELETE RESTRICT,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     price INTEGER NOT NULL CHECK (price >= 0),
-    lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
-    PRIMARY KEY (listing_id, product_id, price, lifetime_id),
+    PRIMARY KEY (listing_id, product_id, price),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
@@ -125,34 +125,34 @@ CREATE TABLE webstore.sale_invoice (
 CREATE TRIGGER webstore_sale_invoice_set_updated_at BEFORE UPDATE ON webstore.sale_invoice
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE webstore.aquired_product (
-    aquired_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sale_id UUID NOT NULL REFERENCES webstore.sale (sale_id)
-        ON DELETE RESTRICT,
-    user_id UUID NOT NULL REFERENCES account.user (user_id),
-    product_id UUID NOT NULL REFERENCES webstore.product (product_id),
-    listing_id UUID NOT NULL REFERENCES webstore.listing (listing_id),
-    lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
-CREATE TRIGGER webstore_aquired_product_set_updated_at BEFORE UPDATE ON webstore.aquired_product
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+-- CREATE TABLE webstore.aquired_product (
+--     aquired_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     sale_id UUID NOT NULL REFERENCES webstore.sale (sale_id)
+--         ON DELETE RESTRICT,
+--     user_id UUID NOT NULL REFERENCES account.user (user_id),
+--     product_id UUID NOT NULL REFERENCES webstore.product (product_id),
+--     listing_id UUID NOT NULL REFERENCES webstore.listing (listing_id),
+--     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+-- );
+-- CREATE TRIGGER webstore_aquired_product_set_updated_at BEFORE UPDATE ON webstore.aquired_product
+--     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE webstore.aquired_product_use (
-    aquired_product_use_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    aquired_product_id UUID NOT NULL
-        REFERENCES webstore.aquired_product (aquired_product_id)
-        ON DELETE RESTRICT, -- once a usage exists, the product cannot be deleted
-    cancelled BOOLEAN DEFAULT false,
-    cancelled_motive TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
-    updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
-);
-CREATE TRIGGER webstore_aquired_product_use_set_updated_at BEFORE UPDATE ON webstore.aquired_product_use
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+-- CREATE TABLE webstore.aquired_product_use (
+--     aquired_product_use_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     aquired_product_id UUID NOT NULL
+--         REFERENCES webstore.aquired_product (aquired_product_id)
+--         ON DELETE RESTRICT, -- once a usage exists, the product cannot be deleted
+--     cancelled BOOLEAN DEFAULT false,
+--     cancelled_motive TEXT,
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+--     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
+--     updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
+-- );
+-- CREATE TRIGGER webstore_aquired_product_use_set_updated_at BEFORE UPDATE ON webstore.aquired_product_use
+--     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TABLE webstore.cart_listing (
     user_id UUID NOT NULL REFERENCES account.user (user_id)
@@ -165,6 +165,44 @@ CREATE TABLE webstore.cart_listing (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 CREATE TRIGGER webstore_cart_listing_set_updated_at BEFORE UPDATE ON webstore.cart_listing
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE webstore.voucher (
+    voucher_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sale_id UUID NOT NULL REFERENCES webstore.sale (sale_id)
+        ON DELETE RESTRICT,
+    listing_id UUID NOT NULL REFERENCES webstore.listing (listing_id)
+        ON DELETE RESTRICT,
+    aquired INTEGER NOT NULL CHECK (aquired > 0),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+CREATE TRIGGER webstore_voucher_set_updated_at BEFORE UPDATE ON webstore.voucher
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE webstore.voucher_product (
+    voucher_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    voucher_id UUID NOT NULL REFERENCES webstore.voucher (voucher_id),
+    product_id UUID NOT NULL REFERENCES webstore.product (product_id),
+    quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+CREATE TRIGGER webstore_voucher_product_set_updated_at BEFORE UPDATE ON webstore.voucher_product
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE webstore.voucher_claim (
+    voucher_claim_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    voucher_id UUID NOT NULL REFERENCES webstore.voucher (voucher_id),
+    claimed INTEGER NOT NULL CHECK (claimed > 0),
+    cancelled BOOLEAN DEFAULT false,
+    cancelled_motive TEXT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),
+    updated_by_user_id UUID NOT NULL REFERENCES account.user (user_id)
+);
+CREATE TRIGGER webstore_voucher_claim_set_updated_at BEFORE UPDATE ON webstore.voucher_claim
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE VIEW webstore.inventory AS
@@ -190,20 +228,55 @@ LEFT JOIN webstore.sale_listing
 WHERE webstore.listing.supply IS NOT NULL
 GROUP BY webstore.listing.listing_id, webstore.listing.supply;
 
-CREATE VIEW webstore.aquired_product_usable AS
-SELECT
-    webstore.aquired_product.aquired_product_id
-FROM webstore.aquired_product
-LEFT JOIN calendar.lifetime ON webstore.aquired_product.lifetime_id = calendar.lifetime.lifetime_id
-LEFT JOIN calendar.lifetime_weekday ON calendar.lifetime.lifetime_id = calendar.lifetime_weekday.lifetime_id AND calendar.lifetime_weekday.weekday_id = EXTRACT(DOW FROM now())::int
-LEFT JOIN calendar.holiday ON calendar.holiday.date = CURRENT_DATE
-WHERE now() >= calendar.lifetime.start AND now() <= calendar.lifetime.end
-AND webstore.aquired_product.aquired_product_id NOT IN (SELECT webstore.aquired_product_use.aquired_product_id FROM webstore.aquired_product_use WHERE webstore.aquired_product_use.cancelled = false)
-AND ((
-    calendar.holiday.date IS NULL AND calendar.lifetime_weekday.weekday_id IS NOT NULL
-) OR (
-    calendar.holiday.date IS NOT NULL AND calendar.lifetime.include_holidays = true
-));
+CREATE VIEW voucher_status AS
+WITH vouchers_usable_today (voucher_id) AS (
+    SELECT webstore.voucher.voucher_id
+    FROM webstore.voucher
+    LEFT JOIN webstore.listing USING (listing_id)
+    LEFT JOIN calendar.lifetime USING (lifetime_id)
+    LEFT JOIN calendar.lifetime_weekday
+        ON calendar.lifetime.lifetime_id = calendar.lifetime_weekday.lifetime_id
+        AND calendar.lifetime_weekday.weekday_id = EXTRACT(DOW FROM now())::int
+    LEFT JOIN calendar.holiday ON calendar.holiday.date = CURRENT_DATE
+    WHERE now() >= calendar.lifetime.start AND now() <= calendar.lifetime.end
+    AND ((
+        calendar.holiday.date IS NULL AND calendar.lifetime_weekday.weekday_id IS NOT NULL
+    ) OR (
+        calendar.holiday.date IS NOT NULL AND calendar.lifetime.include_holidays = true
+    ))
+), vouchers_used (voucher_id, used) AS (
+    SELECT
+        webstore.voucher.voucher_id AS voucher_id,
+        COALESCE(SUM(webstore.voucher_claim.claimed), 0) AS used
+    FROM webstore.voucher
+    LEFT JOIN webstore.voucher_claim
+        ON webstore.voucher_claim.voucher_id = webstore.voucher.voucher_id
+        AND webstore.voucher_claim.cancelled != true
+    GROUP BY webstore.voucher.voucher_id
+) SELECT
+    webstore.voucher.voucher_id,
+    webstore.voucher.aquired,
+    vouchers_used.used,
+    webstore.voucher.aquired - vouchers_used.used AS remaining,
+    ((webstore.voucher.aquired - vouchers_used.used) > 0)::boolean AS available,
+    EXISTS (SELECT 1 FROM vouchers_usable_today WHERE vouchers_usable_today.voucher_id = vouchers_used.voucher_id) AS usable
+FROM webstore.voucher
+LEFT JOIN vouchers_used USING (voucher_id);
+
+-- CREATE VIEW webstore.aquired_product_usable AS
+-- SELECT
+--     webstore.aquired_product.aquired_product_id
+-- FROM webstore.aquired_product
+-- LEFT JOIN calendar.lifetime ON webstore.aquired_product.lifetime_id = calendar.lifetime.lifetime_id
+-- LEFT JOIN calendar.lifetime_weekday ON calendar.lifetime.lifetime_id = calendar.lifetime_weekday.lifetime_id AND calendar.lifetime_weekday.weekday_id = EXTRACT(DOW FROM now())::int
+-- LEFT JOIN calendar.holiday ON calendar.holiday.date = CURRENT_DATE
+-- WHERE now() >= calendar.lifetime.start AND now() <= calendar.lifetime.end
+-- AND webstore.aquired_product.aquired_product_id NOT IN (SELECT webstore.aquired_product_use.aquired_product_id FROM webstore.aquired_product_use WHERE webstore.aquired_product_use.cancelled = false)
+-- AND ((
+--     calendar.holiday.date IS NULL AND calendar.lifetime_weekday.weekday_id IS NOT NULL
+-- ) OR (
+--     calendar.holiday.date IS NOT NULL AND calendar.lifetime.include_holidays = true
+-- ));
 
 CREATE FUNCTION webstore.protect_sale_listing()
 RETURNS TRIGGER AS $$
@@ -310,18 +383,18 @@ CREATE TRIGGER webstore_sale_listing_verify_availability
     BEFORE INSERT ON webstore.sale_listing
     FOR EACH ROW EXECUTE FUNCTION webstore.sale_listing_verify_availability();
 
-CREATE FUNCTION webstore.validate_aquired_product_use()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF (NEW.aquired_product_id) NOT IN (SELECT webstore.aquired_product_usable.aquired_product_id FROM webstore.aquired_product_usable) THEN
-        RAISE EXCEPTION 'Cannot use this product.';
-    END IF;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- CREATE FUNCTION webstore.validate_aquired_product_use()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF (NEW.aquired_product_id) NOT IN (SELECT webstore.aquired_product_usable.aquired_product_id FROM webstore.aquired_product_usable) THEN
+--         RAISE EXCEPTION 'Cannot use this product.';
+--     END IF;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
 
-CREATE TRIGGER validate_webstore_aquired_product_use
-    BEFORE INSERT ON webstore.aquired_product_use
-    FOR EACH ROW EXECUTE FUNCTION webstore.validate_aquired_product_use();
+-- CREATE TRIGGER validate_webstore_aquired_product_use
+--     BEFORE INSERT ON webstore.aquired_product_use
+--     FOR EACH ROW EXECUTE FUNCTION webstore.validate_aquired_product_use();
 
 COMMIT;
