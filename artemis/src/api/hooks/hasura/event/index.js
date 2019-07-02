@@ -1,9 +1,11 @@
 const fs = require('fs')
 const express = require('express')
 const app = express()
-const izi = require('utils/izi')
 const getImageSizes = require('services/image/getImageSizes')
 const removeImageSizes = require('services/image/removeImageSizes')
+
+const createIziInvoice = require('services/invoice/createIziInvoice')
+const updateInvoice = require('services/invoice/updateInvoice')
 
 app.use(function (req, res, next) {
   // this is a security vulnerability. Make sure to authorize
@@ -157,6 +159,19 @@ app.post('/website/image/delete', express.json(), async (req, res) => {
   removeImageSizes(image_id, sizes)
 
   res.status(200).end()
+})
+
+app.post('/accounting/invoice/insert', express.json(), async (req, res) => {
+  const invoice_id = req.body.event.data.new.invoice_id
+
+  try {
+    const iziInvoice = await createIziInvoice({ invoice_id })
+    await updateInvoice({ invoice_id, update: iziInvoice })
+
+    res.status(200).end()
+  } catch (error) {
+    res.status(500).end()
+  }
 })
 
 module.exports = app

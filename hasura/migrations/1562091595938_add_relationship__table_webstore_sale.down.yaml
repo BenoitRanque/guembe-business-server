@@ -1,0 +1,6 @@
+- args:
+    relationship: vouchers
+    table:
+      name: sale
+      schema: webstore
+  type: drop_relationship

@@ -1,0 +1,12 @@
+- args:
+    name: vouchers
+    table:
+      name: sale
+      schema: webstore
+    using:
+      foreign_key_constraint_on:
+        column: sale_id
+        table:
+          name: voucher
+          schema: webstore
+  type: create_array_relationship

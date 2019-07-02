@@ -17,7 +17,9 @@ CREATE TABLE accounting.invoice (
     invoice_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     economic_activity_id INTEGER NOT NULL
         REFERENCES accounting.economic_activity (economic_activity_id),
-    amount INTEGER NOT NULL CHECK (amount > 0),
+    business_name TEXT NOT NULL,
+    tax_identification_number TEXT NOT NULL,
+    total INTEGER NOT NULL CHECK (total > 0),
     -- invoice data must go here.
     izi_id INTEGER,
     izi_timestamp TIMESTAMP WITH TIME ZONE,
@@ -101,11 +103,11 @@ CREATE TABLE accounting.payment (
     khipu_payer_name TEXT, -- (String) Nombre del pagador
     khipu_payer_email TEXT, -- (String) Correo electrónico del pagador
     khipu_personal_identifier TEXT, -- (String) Identificador personal del pagador
-    khipu_bank_user_number TEXT, -- (String) Número de cuenta bancaria del pagador
+    khipu_bank_account_number TEXT, -- (String) Número de cuenta bancaria del pagador
     khipu_out_of_date_conciliation BOOLEAN, -- (Boolean) Es 'true' si la conciliación del pago fue hecha luego de la fecha de expiración
     khipu_transaction_id TEXT, -- (String) Identificador del pago asignado por el cobrador
     khipu_custom JSONB, -- (String) Campo genérico que asigna el cobrador al momento de hacer el pago
-    khipu_responsible_account_email TEXT, -- (String) Correo electrónico de la persona responsable del pago
+    khipu_responsible_user_email TEXT, -- (String) Correo electrónico de la persona responsable del pago
     khipu_send_reminders BOOLEAN, -- (Boolean) Es 'true' cuando este es un cobro por correo electrónico y khipu enviará recordatorios
     khipu_send_email BOOLEAN, -- (Boolean) Es 'true' cuando khipu enviará el cobro por correo electrónico
     khipu_payment_method TEXT, -- (String) Método de pago usado por el pagador, puede ser 'regular_transfer' (transferencia normal), 'simplified_transfer' (transferencia simplificada) o 'not_available' (para un pago marcado como realizado por otro medio por el cobrador).
@@ -138,7 +140,7 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER accounting_payment_update_status AFTER INSERT ON accounting.payment_update
-    EXECUTE FUNCTION accounting.payment_update_status();
+    FOR EACH ROW EXECUTE FUNCTION accounting.payment_update_status();
 
 -- idea for refund table
 -- CREATE TABLE accounting.refund (

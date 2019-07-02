@@ -1,0 +1,15 @@
+- args:
+    table:
+      name: voucher
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: voucher_claim
+      schema: webstore
+  type: untrack_table
+- args:
+    table:
+      name: voucher_product
+      schema: webstore
+  type: untrack_table

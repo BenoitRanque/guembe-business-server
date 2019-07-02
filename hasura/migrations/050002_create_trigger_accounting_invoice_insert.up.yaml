@@ -1,0 +1,16 @@
+- args:
+    headers:
+    - name: Authorization
+      value_from_env: HASURA_GRAPHQL_ADMIN_SECRET
+    insert:
+      columns: '*'
+    name: accounting_invoice_insert
+    retry_conf:
+      interval_sec: 60
+      num_retries: 3
+      timeout_sec: 60
+    table:
+      name: invoice
+      schema: accounting
+    webhook: http://artemis:8080/api/v1/hooks/hasura/event/accounting/invoice/insert
+  type: create_event_trigger

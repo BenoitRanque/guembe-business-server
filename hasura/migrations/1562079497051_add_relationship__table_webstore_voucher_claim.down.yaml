@@ -1,0 +1,6 @@
+- args:
+    relationship: created_by_user
+    table:
+      name: voucher_claim
+      schema: webstore
+  type: drop_relationship

@@ -38,6 +38,7 @@ CREATE TABLE webstore.listing (
     available_to DATE NOT NULL,
     CHECK (available_from <= available_to),
     lifetime_id UUID NOT NULL REFERENCES calendar.lifetime (lifetime_id),
+    emit_multiple_vouchers BOOLEAN NOT NULL DEFAULT false,
     supply INTEGER CHECK (supply IS NULL OR supply > 0),
     total INTEGER NOT NULL CHECK (total >= 0) DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -84,7 +85,7 @@ CREATE TRIGGER webstore_listing_product_set_updated_at BEFORE UPDATE ON webstore
 CREATE TABLE webstore.sale (
     sale_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES account.user (user_id),
-    client_id UUID NOT NULL REFERENCES account.client (client_id),
+    client_id UUID REFERENCES account.client (client_id),
     total INTEGER NOT NULL CHECK (total >= 0) DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
