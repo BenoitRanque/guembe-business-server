@@ -45,5 +45,5 @@ you can run a dedicated, small server for this.
 run
 
 ```
-docker-compose up -f obtain-certificates.docker-compose.yml
+docker-compose -f obtain-certificates.docker-compose.yml up
 ```

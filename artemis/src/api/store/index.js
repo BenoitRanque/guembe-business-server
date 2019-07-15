@@ -46,7 +46,6 @@ app.post('/verifypayment/:paymentId', requireSessionRole(['client']), async func
     await validatePaymentOwnership({ payment_id, client_id })
 
     const khipu_payment_id = await getPaymenKhipuId({ payment_id })
-    console.log('hello')
     const khipuPayment = await khipu.getPaymentsId(khipu_payment_id)
     await handlePaymentUpdate({ khipuPayment })
 

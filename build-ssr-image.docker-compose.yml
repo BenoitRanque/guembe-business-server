@@ -1,0 +1,31 @@
+# production configuration. See docker-compose.override.yml from development specific configurations
+version: '3.7'
+services:
+  hades:
+    image: hades:prod
+    build:
+      context: ./hades
+      dockerfile: ./Dockerfile
+      args:
+        NODE_ENV: production
+    command: yarn start
+    expose:
+      - "8080"
+    restart: always
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+  zeus:
+    image: zeus:prod
+    build:
+      context: ./zeus
+      dockerfile: ./Dockerfile
+      args:
+        NODE_ENV: production
+    command: yarn start
+    expose:
+      - "8080"
+    restart: always
+    environment:
+      PORT: 8080
+      NODE_ENV: production

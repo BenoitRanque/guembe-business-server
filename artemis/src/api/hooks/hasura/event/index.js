@@ -162,14 +162,14 @@ app.post('/website/image/delete', express.json(), async (req, res) => {
 })
 
 app.post('/accounting/invoice/insert', express.json(), async (req, res) => {
-  const invoice_id = req.body.event.data.new.invoice_id
-
   try {
+    const invoice_id = req.body.event.data.new.invoice_id
     const iziInvoice = await createIziInvoice({ invoice_id })
     await updateInvoice({ invoice_id, update: iziInvoice })
 
     res.status(200).end()
   } catch (error) {
+    console.error(error)
     res.status(500).end()
   }
 })

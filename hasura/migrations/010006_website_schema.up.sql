@@ -25,27 +25,6 @@ CREATE TABLE website.format_size (
     height INTEGER NOT NULL CHECK (height >= 0)
 );
 
-INSERT INTO website.format (format_id, name) VALUES
-    ('card', 'Tarjeta'),
-    ('wide', 'Ancho'),
-    ('background', 'Fondo');
-INSERT INTO website.format_size (format_id, size_id, width, height) VALUES
-    ('card', 'xl', 800, 600),
-    ('card', 'lg', 640, 480),
-    ('card', 'md', 480, 360),
-    ('card', 'sm', 320, 240),
-    ('card', 'xs', 160, 120),
-    ('background', 'xl', 1400, 700),
-    ('background', 'lg', 1120, 560),
-    ('background', 'md', 840, 420),
-    ('background', 'sm', 560, 280),
-    ('background', 'xs', 280, 140),
-    ('wide', 'xl', 1400, 700),
-    ('wide', 'lg', 1120, 560),
-    ('wide', 'md', 840, 420),
-    ('wide', 'sm', 560, 280),
-    ('wide', 'xs', 280, 140);
-
 CREATE TABLE website.image (
     image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     format_id TEXT NOT NULL REFERENCES website.format (format_id),
@@ -66,6 +45,8 @@ CREATE TABLE website.page (
     CHECK ((path IS NOT NULL AND preliminary_path IS NULL) OR (path IS NULL AND preliminary_path IS NOT NULL)),
 	name TEXT NOT NULL,
     image_id UUID REFERENCES website.image (image_id) ON DELETE RESTRICT,
+    editable BOOLEAN NOT NULL DEFAULT true, -- can(not) be edited
+    protected BOOLEAN NOT NULL DEFAULT false, -- can(not) be deleted
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_by_user_id UUID NOT NULL REFERENCES account.user (user_id),

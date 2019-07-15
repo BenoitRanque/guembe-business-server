@@ -5,7 +5,6 @@ const { BadRequestError } = require('utils/errors')
 const app = express()
 
 app.post('/', express.json(), async function (req, res, next) {
-  console.log(req.body)
   try {
     const {
       page_id = null,

@@ -1,6 +1,0 @@
-- args:
-    relationship: voucher_products
-    table:
-      name: voucher
-      schema: webstore
-  type: drop_relationship

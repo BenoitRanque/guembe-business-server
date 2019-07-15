@@ -6,7 +6,7 @@ services:
     image: nginx:stable-alpine
     ports:
       - "80:80"
-    restart: unless-stoped
+    restart: unless-stopped
     volumes:
       - ./public/certbot:/usr/share/nginx/html
   certbot:

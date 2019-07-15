@@ -229,7 +229,7 @@ LEFT JOIN webstore.sale_listing
 WHERE webstore.listing.supply IS NOT NULL
 GROUP BY webstore.listing.listing_id, webstore.listing.supply;
 
-CREATE VIEW voucher_status AS
+CREATE VIEW webstore.voucher_status AS
 WITH vouchers_usable_today (voucher_id) AS (
     SELECT webstore.voucher.voucher_id
     FROM webstore.voucher

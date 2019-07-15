@@ -42,3 +42,19 @@
     name: sale_payment
     schema: webstore
   type: add_existing_table_or_view
+- args:
+    name: voucher
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: voucher_claim
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: voucher_product
+    schema: webstore
+  type: add_existing_table_or_view
+- args:
+    name: voucher_status
+    schema: webstore
+  type: add_existing_table_or_view

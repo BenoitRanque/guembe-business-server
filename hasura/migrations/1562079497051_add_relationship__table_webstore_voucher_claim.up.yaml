@@ -1,8 +1,0 @@
-- args:
-    name: created_by_user
-    table:
-      name: voucher_claim
-      schema: webstore
-    using:
-      foreign_key_constraint_on: created_by_user_id
-  type: create_object_relationship

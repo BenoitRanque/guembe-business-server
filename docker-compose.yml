@@ -143,22 +143,6 @@ services:
       - ./public/static/uploads:/usr/app/uploads:rw
     networks:
       - app-network
-  # hades:
-  #   image: hades:prod
-  #   build:
-  #     context: .
-  #     dockerfile: ./hades/Dockerfile
-  #     args:
-  #       NODE_ENV: production
-  #   command: yarn start
-  #   expose:
-  #     - "8080"
-  #   restart: always
-  #   environment:
-  #     PORT: 8080
-  #     NODE_ENV: production
-  #   networks:
-  #     - app-network
 secrets:
   IZI_PUBLIC_KEY:
     file: ./nginx/certs/IZI_PUBLIC_KEY.pub

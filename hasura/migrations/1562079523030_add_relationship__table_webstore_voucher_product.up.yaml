@@ -1,8 +1,0 @@
-- args:
-    name: voucher
-    table:
-      name: voucher_product
-      schema: webstore
-    using:
-      foreign_key_constraint_on: voucher_id
-  type: create_object_relationship
