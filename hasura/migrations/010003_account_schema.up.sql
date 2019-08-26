@@ -52,7 +52,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE FUNCTION account.hash_password()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.password IS NOT NULL THEN
+    IF NEW.password IS NOT NULL AND (OLD IS NULL OR OLD.password != NEW.password) THEN
         NEW.password = crypt(NEW.password, gen_salt('bf'));
     END IF;
     RETURN NEW;
